@@ -1,0 +1,80 @@
+html {
+  height: 100%; }
+
+body {
+  height: 100%;
+  background: #84c1e8;
+  /* Old browsers */
+  /* IE9 SVG, needs conditional override of 'filter' to 'none' */
+  background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiM4NGMxZTgiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDI3ZmU1IiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+  background: -moz-radial-gradient(center, ellipse cover, #84c1e8 0%, #027fe5 100%);
+  /* FF3.6+ */
+  background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, #84c1e8), color-stop(100%, #027fe5));
+  /* Chrome,Safari4+ */
+  background: -webkit-radial-gradient(center, ellipse cover, #84c1e8 0%, #027fe5 100%);
+  /* Chrome10+,Safari5.1+ */
+  background: -o-radial-gradient(center, ellipse cover, #84c1e8 0%, #027fe5 100%);
+  /* Opera 12+ */
+  background: -ms-radial-gradient(center, ellipse cover, #84c1e8 0%, #027fe5 100%);
+  /* IE10+ */
+  background: radial-gradient(ellipse at center, #84c1e8 0%, #027fe5 100%);
+  /* W3C */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#84c1e8', endColorstr='#027fe5',GradientType=1 );
+  /* IE6-8 fallback on horizontal gradient */ }
+
+p {
+  background-color: #ccc; }
+
+h1 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 6em; }
+
+h2 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 5em; }
+
+h3 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 4em; }
+
+h4 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 3em; }
+
+h5 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 2em; }
+
+h6 {
+  color: #ffc80d;
+  font-family: "Patua One", cursive;
+  font-size: 1em; }
+
+/* ============= mixin ============== */
+/* ============= login page ============== */
+.box-panel {
+  margin: 25% 0 0 0; }
+  .box-panel h4 {
+    -webkit-text-shadow: -2px -3px 3px rgba(0, 0, 0, 0.2);
+    -moz-text-shadow: -2px -3px 3px rgba(0, 0, 0, 0.2);
+    text-shadow: -2px -3px 3px rgba(0, 0, 0, 0.2); }
+  .box-panel .panel {
+    -webkit-box-shadow: 0px 2px 12px rgba(0, 80, 145, 0.2);
+    -moz-box-shadow: 0px 2px 12px rgba(0, 80, 145, 0.2);
+    box-shadow: 0px 2px 12px rgba(0, 80, 145, 0.2); }
+  .box-panel h6 a, .box-panel h5 a {
+    color: #ffc80d;
+    -webkit-text-shadow: -1px -1px 3px rgba(0, 0, 0, 0.35);
+    -moz-text-shadow: -1px -1px 3px rgba(0, 0, 0, 0.35);
+    text-shadow: -1px -1px 3px rgba(0, 0, 0, 0.35); }
+
+.clear-top {
+  margin-top: 0; }
+
+.clear-bottom {
+  margin-bottom: 0; }

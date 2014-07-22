@@ -1,0 +1,31 @@
+{
+  "name": "DontGetAngry",
+  "version": "0.0.1",
+  "description": "Don't Get Angry",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/darkonarancic/DontGetAngry.git"
+  },
+  "author": "Darko Narancic",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darkonarancic/DontGetAngry/issues"
+  },
+  "homepage": "https://github.com/darkonarancic/DontGetAngry",
+  "dependencies": {
+    "compass": "~0.1.0",
+    "jade": "~1.4.2",
+    "express": "~4.6.1",
+    "node-compass": "~0.2.3",
+    "morgan": "~1.2.0",
+    "body-parser": "~1.5.0",
+    "mongoose": "~3.8.13"
+  },
+  "devDependencies": {
+    "bower": "~1.3.8"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "DontGetAngry",
+  "version": "0.0.1",
+  "homepage": "https://github.com/darkonarancic/DontGetAngry",
+  "authors": [
+    "d.narancic <narancic.darko>"
+  ],
+  "description": "Don't Get Angry",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "jquery": "~2.1.1",
+    "toastr": "~2.0.3",
+    "angular": "~1.2.20",
+    "angular-resource": "~1.2.20",
+    "angular-route": "~1.2.20",
+    "bootstrap": "~3.2.0"
+  }
+}
