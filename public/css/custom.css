@@ -20,7 +20,8 @@ body {
   background: radial-gradient(ellipse at center, #84c1e8 0%, #027fe5 100%);
   /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#84c1e8', endColorstr='#027fe5',GradientType=1 );
-  /* IE6-8 fallback on horizontal gradient */ }
+  /* IE6-8 fallback on horizontal gradient */
+  font-family: "Patua One", cursive; }
 
 p {
   background-color: #ccc; }
@@ -78,3 +79,10 @@ h6 {
 
 .clear-bottom {
   margin-bottom: 0; }
+
+/* ============ main menu =========== */
+.main-menu {
+  margin-top: 10px !important; }
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important; }

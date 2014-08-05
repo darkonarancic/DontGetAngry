@@ -1,3 +1,9 @@
-/**
- * Created by d.narancic on 7/28/2014.
- */
+angryApp.factory('angryRoute', ['$location', '$http', 'usersService',function($location, $http, usersService){
+    return {
+        checkUser: function(){
+            if(!usersService.userData.session.sessionState){
+                $location.path('/');
+            }
+        }
+    }
+}]);

@@ -1,3 +1,11 @@
-/**
- * Created by d.narancic on 7/23/2014.
- */
+var passport = require('passport');
+
+module.exports = function(app){
+    app.get('/partials/:partialPath', function(req, res){
+        res.render('partials/' + req.params.partialPath);
+    });
+
+    app.get('*', function(req, res){
+        res.render('index');
+    });
+}

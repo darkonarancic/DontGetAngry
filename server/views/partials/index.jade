@@ -1,15 +1,21 @@
+div.col-xs-12
+    div.row
+        div.clearfix
+            div.col-md-4.col-sm-6.col-xs-12.col-md-push-4.col-sm-push-3.text-center
+                div.alert(role="alert", ng-show="msgShow", ng-class="{'alert-danger': msgState, 'alert-success': !msgState}")
+                    span(name="msgLabel" ng-class="{'success': msgStatus, 'danger': !msgStatus}") {{ msgLabel }}
 div.box-panel
-    div.col-md-4.col-sm-6.col-xs-12.col-md-push-4.col-sm-push-2.text-center
+    div.col-md-4.col-sm-6.col-xs-12.col-md-push-4.col-sm-push-3.text-center
         h4 Sign in
         div.panel.panel-defaul
             div.panel-body
-                form
-                    input(type="text" placeholder="Username").form-control
+                form(name="loginForm")
+                    input(type="text" placeholder="Username" ng-model="loginForm.username" name="loginForm.username" autofocus).form-control
                     br
-                    input(type="password" placeholder="Password").form-control
+                    input(type="password" placeholder="Password" ng-model="loginForm.password" name="loginForm.password").form-control
                     br
                     a(href="/forgot-password").pull-left Forgot password
-                    button(type="submit").btn.btn-primary.pull-right Sign in
+                    button(type="submit" ng-click="tryLogin();").btn.btn-primary.pull-right Sign in
         h5
             a(href="/sign-up") Sign up!
 

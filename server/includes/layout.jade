@@ -5,7 +5,8 @@ html
         link(rel="stylesheet", href="/css/main.css")
         link(rel="stylesheet", href="/css/custom.css")
         link(rel="stylesheet", href="http://fonts.googleapis.com/css?family=Patua+One" type="text/css")
-    body(ng-app='app')
+    body
         div.container
-            block main-content
+            div(ng-app="app", ng-controller="angryAppMainCtrl", class="ng-cloak")
+                block main-content
         include scripts

@@ -1,6 +1,6 @@
 var nodemailer = require('nodemailer');
 
-module.exports = function(userNotificationConfig){
+module.exports = function(config){
     var transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
@@ -11,19 +11,17 @@ module.exports = function(userNotificationConfig){
 
     var mailOptions = {
         from: 'Don\'t get Angry :heavy_check_mark: <foo@blurdybloop.com>', // sender address
-        to: userNotificationConfig.email, // list of receivers
-        subject: userNotificationConfig.subject, // Subject line
-        text: userNotificationConfig.text, // plaintext body
-        html: userNotificationConfig.html // html body
+        to: config.email, // list of receivers
+        subject: config.subject, // Subject line
+        text: config.text, // plaintext body
+        html: config.html // html body
     };
 
-    var sendEmailToUser = function(){
-        transporter.sendMail(mailOptions, function(error, info){
-            if(error){
-                console.log(error);
-            }else{
-                console.log('Message sent: ' + info.response);
-            }
-        });
-    };
+    transporter.sendMail(mailOptions, function(error, info){
+        if(error){
+            console.log(error);
+        }else{
+            console.log('Message sent: ' + info.response);
+        }
+    });
 };

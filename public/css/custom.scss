@@ -14,7 +14,7 @@ body {
   background: -ms-radial-gradient(center, ellipse cover,  #84c1e8 0%,#027fe5 100%); /* IE10+ */
   background: radial-gradient(ellipse at center,  #84c1e8 0%,#027fe5 100%); /* W3C */
   filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#84c1e8', endColorstr='#027fe5',GradientType=1 ); /* IE6-8 fallback on horizontal gradient */
-
+  font-family: $font;
 };
 
 p {
@@ -63,3 +63,13 @@ p {
 .clear-bottom {
   margin-bottom: 0;
 }
+
+/* ============ main menu =========== */
+.main-menu {
+  margin-top: 10px !important;
+}
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+

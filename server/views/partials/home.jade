@@ -1,1 +1,22 @@
-div(class="navbar bavbar-default")
+div(class="col-xs-10 main-menu col-sm-push-1")
+    div(class="navbar navbar-default")
+        div.navbar-header
+            a.navbar-brand.pull-left
+                h6.clear-top Don't Get Angry
+        form(class="navbar-form navbar-right", role="search")
+            div.col-xs-12
+                div(class="form-group")
+                    a Hello, {{ user.username }}&nbsp;&nbsp;&nbsp;
+                button(type="submit" class="btn btn-primary" ng-click="logOut();") Logout
+
+div(class="col-xs-10 main-menu col-sm-push-1")
+    div(class="panel panel-default")
+        div(class="panel-heading")
+            h5 Game board
+                a(href="#" ng-click="createNewGame();").btn.btn-success.pull-right Create new game!
+        div.panel-body
+            div.col-xs-12
+                div.row(ng-repeat="game in gameObj.games")
+                    div.form-group
+                        span {{ game.gameOwner }}
+                        a(href="#", ng-click="joinGame();" ng-href="{{ game.gameId }}").pull-right.btn.btn-success Join

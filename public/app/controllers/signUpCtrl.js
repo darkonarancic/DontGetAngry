@@ -1,10 +1,18 @@
+'use strict';
+
 angryApp.controller('signUpCtrl', ['$scope', '$location', 'usersService', function($scope, $location, usersService){
     $scope.addNewUser = function(){
-        $scope.registerNewUser = usersService.addUser($scope.username, $scope.email, $scope.password);
-        $scope.registerNewUser.then(function(status){
-               $location.path('/');
+        usersService.addUser($scope.username, $scope.email, $scope.password).then(
+            function(data){
+                $location.path('/');
+                $scope.msgLabel = usersService.userData.regMsg = data.msg;
+                $scope.status = usersService.userData.regStatus = data.status;
+                $scope.msgShow = usersService.userData.msgShow = true;
+                $scope.msgState = usersService.userData.msgState = data.msgState;
             },function(status){
-                console.log(status);
+                $scope.msgLabel = usersService.userData.regMsg = status.msg;
+                $scope.status = usersService.userData.regStatus = status.status;
+                $scope.msgState = usersService.userData.msgState = status.msgState;
             }
         );
     };
