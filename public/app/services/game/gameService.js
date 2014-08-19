@@ -3,18 +3,18 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
         availableGames: {
             games: ""
         },
+        gameObj:{
+            gameId: ""
+        },
         getSessionDetails: function(){
             return usersService.userData.session;
         },
         createGame: function(){
-            var deferre = $q.defer();
+            var io = this.getSocket().getInstance(),
+                deferre = $q.defer();
 
-            $http.post('/createGame')
-            .success(function(data){
+            io.emit('createGame', function(data){
                 deferre.resolve(data);
-            })
-            .error(function(status){
-                deferre.reject(status);
             });
 
             return deferre.promise;
@@ -53,6 +53,31 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
                 .error(function(status){
                     deferre.reject(status);
                 });
+
+            return deferre.promise;
+        },
+        createYouOwnGame: function(){
+            var io = this.getSocket().getInstance(),
+                deferre = $q.defer();
+
+            io.on('createdGameResponse', function(data){
+                deferre.resolve(data);
+            });
+
+            return deferre.promise;
+        },
+        joinGame: function(id){
+            var io = this.getSocket().getInstance();
+
+            io.emit('join', { id: id });
+        },
+        joiningGameResponse: function(){
+            var io = this.getSocket().getInstance(),
+                deferre = $q.defer();
+
+            io.on('joinedGameResponse', function(data){
+                deferre.resolve(data);
+            });
 
             return deferre.promise;
         }

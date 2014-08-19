@@ -3,15 +3,16 @@ var mongoose = require('mongoose'),
     passport = require('passport'),
     LocalStrategy = require('passport-local').Strategy;
 
-module.exports = function(app, path){
-    var userSchema = mongoose.Schema({
-        username: {type: String, required: true, unique: true},
-        email: {type: String, required: true, unique: true},
-        password: {type: String, required: true},
-        activated: {type: Boolean, required: true}
-    });
+module.exports = exports = function(app, io, User){
 
-    var User = mongoose.model('users', userSchema);
+    io.on("connection", function(socket){
+        if(socket.request.session.passport.user)
+        {
+            io.sockets.emit('opaBoskic', {
+                user: socket.request.session.passport
+            });
+        }
+    });
 
     passport.use(new LocalStrategy(
         function(username, password, done){

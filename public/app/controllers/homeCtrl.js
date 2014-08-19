@@ -24,7 +24,23 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
         );
     };
 
-     gameService.getAllGames().then(
+    $scope.joinExistingGame = function(button){
+        gameService.joinGame(button.game.gameOwner + button.game.gameId);
+        $scope.joiningGameResponse();
+    };
+
+    $scope.joiningGameResponse = function(){
+        gameService.joiningGameResponse().then(
+            function(data){
+                console.log(data);
+            },
+            function(status){
+                console.log(status);
+            }
+        );
+    };
+
+    gameService.getAllGames().then(
         function(data){
             $scope.gameObj.games = data.games;
         },
@@ -33,5 +49,15 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
         }
     );
 
+    gameService.createYouOwnGame().then(
+        function(data){
+            console.log(data);
+        },
+        function(status){
+            console.log(status);
+        }
+    );
+
     $scope.getTheGame();
+    $scope.joiningGameResponse();
 }]);
