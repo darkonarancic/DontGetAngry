@@ -4,6 +4,8 @@ var mongoose = require('mongoose'),
 
 module.exports = function(app, io, User){
     var gameObj = {};
+    var players = [];
+    var gameRooms = [];
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
         gameOwnerId: {type: String, required: true, unique: true}
@@ -29,9 +31,9 @@ module.exports = function(app, io, User){
 
     io.on("connection", function(socket){
 
-        gameObj.createGame(socket, socket.request.session.passport.user);
-
         gameObj.joinCurrentGame(socket, socket.request.session.passport.user);
+
+        gameObj.createGame(socket, socket.request.session.passport.user);
         
         /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
 
@@ -111,7 +113,9 @@ module.exports = function(app, io, User){
                                             socket.emit('createdGameResponse', {
                                                 gameStatus: gameStatus
                                             });
-                                            socket.join(userObj.username+userId);
+                                            players[socket.id] = userObj.username;
+                                            gameRooms.push(userObj.username + userId);
+                                            socket.join(userObj.username + userId);
                                         }
                                     });
 
@@ -127,8 +131,20 @@ module.exports = function(app, io, User){
     gameObj.joinCurrentGame = function(socket, userId){
         socket.on('join', function(gameId){
             if(gameId){
-                socket.join(gameId.id);
-                socket.broadcast.to(gameId.id).emit("joinedGameResponse", "You successfully joined game " + gameId.id);
+                //join user to the game
+                /*if(gameRooms[socket.id] && gameRooms[socket.id] !== gameId.id){
+                    socket.leave(gameRooms[socket.id]);
+                }*/
+                var gameId = gameId.id;
+                if(gameRooms.indexOf(gameId) !== -1){
+                    gameRooms.push(gameId);
+                }
+                socket.join(gameId, function(err){
+                    if(!err){
+                        socket.broadcast.to(gameId).emit("joinedGameResponse", userId);
+                    }
+                });
+
             }
         });
     };
