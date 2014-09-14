@@ -25,14 +25,14 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
     };
 
     $scope.joinExistingGame = function(button){
-        gameService.joinGame(button.game.gameOwner + button.game.gameId);
-        $scope.joiningGameResponse();
+        gameService.joinGame(button.game.gameId);
     };
 
     $scope.joiningGameResponse = function(){
         gameService.joiningGameResponse().then(
             function(data){
                 console.log(data);
+                $scope.joiningGameResponse();
             },
             function(status){
                 console.log(status);

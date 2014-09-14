@@ -11,13 +11,13 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
         },
         createGame: function(){
             var io = this.getSocket().getInstance(),
-                deferre = $q.defer();
+                deferred = $q.defer();
 
             io.emit('createGame', function(data){
-                deferre.resolve(data);
+                deferred.resolve(data);
             });
 
-            return deferre.promise;
+            return deferred.promise;
         },
         getSocket: function(){
             var socket = null;
@@ -35,36 +35,36 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
         },
         getNewGame: function(){
             var io = this.getSocket().getInstance(),
-                deferre = $q.defer();
+                deferred = $q.defer();
 
             io.on('availableGames', function(data){
-                deferre.resolve(data.games);
+                deferred.resolve(data.games);
             });
 
-            return deferre.promise;
+            return deferred.promise;
         },
         getAllGames: function(){
-            var deferre = $q.defer();
+            var deferred = $q.defer();
 
             $http.post('/getAllGames')
                 .success(function(data){
-                    deferre.resolve(data);
+                    deferred.resolve(data);
                 })
                 .error(function(status){
-                    deferre.reject(status);
+                    deferred.reject(status);
                 });
 
-            return deferre.promise;
+            return deferred.promise;
         },
         createYouOwnGame: function(){
             var io = this.getSocket().getInstance(),
-                deferre = $q.defer();
+                deferred = $q.defer();
 
             io.on('createdGameResponse', function(data){
-                deferre.resolve(data);
+                deferred.resolve(data);
             });
 
-            return deferre.promise;
+            return deferred.promise;
         },
         joinGame: function(id){
             var io = this.getSocket().getInstance();
@@ -73,13 +73,13 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
         },
         joiningGameResponse: function(){
             var io = this.getSocket().getInstance(),
-                deferre = $q.defer();
+                deferred = $q.defer();
 
             io.on('joinedGameResponse', function(data){
-                deferre.resolve(data);
+                deferred.resolve(data);
             });
 
-            return deferre.promise;
+            return deferred.promise;
         }
     }
 }]);
