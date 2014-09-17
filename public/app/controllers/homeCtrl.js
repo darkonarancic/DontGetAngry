@@ -32,6 +32,25 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
         gameService.joiningGameResponse().then(
             function(data){
                 console.log(data);
+                var modal = document.getElementById('gamePlayersModal');
+                var style = window.getComputedStyle(modal);
+
+                if(data){
+
+                    if(style.display === 'none'){
+                        $(modal).modal('show');
+                    }
+
+                    $scope.currentGameObj = data;
+                }
+                else {
+
+                    if(style.display === 'block'){
+                        $(modal).modal('hide');
+                    }
+
+                    $scope.currentGameObj = "";
+                }
                 $scope.joiningGame();
             },
             function(status){
@@ -39,6 +58,24 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
             }
         );
     };
+
+    /*$scope.closeGame = function(){
+        gameService.closeTheGame().then(
+            function(data){
+                var modal = document.getElementById('gamePlayersModal');
+                var style = window.getComputedStyle(modal);
+
+                if(style.display === 'block'){
+                    $(modal).modal('hide');
+                }
+
+                $scope.currentGameObj = "";
+            },
+            function(status){
+
+            }
+        );
+    };*/
 
     gameService.getAllGames().then(
         function(data){
@@ -52,10 +89,13 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
     gameService.createYouOwnGame().then(
         function(data){
             console.log(data);
-
-            if(data.gameCreated){
+            if(data){
                 $('#gamePlayersModal').modal('show');
                 $scope.currentGameObj = data;
+            }
+            else {
+                $('#gamePlayersModal').modal('hide');
+                $scope.currentGameObj = "";
             }
         },
         function(status){
@@ -72,6 +112,10 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
                 console.log(status);
             }
         );
+    };
+
+    $scope.leaveGame = function(gameId){
+        gameService.leaveCurrentGame(gameId);
     };
 
     $scope.getTheGame();

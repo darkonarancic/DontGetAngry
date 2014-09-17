@@ -9,22 +9,29 @@ var express = require('express'),
 
 
 module.exports = function(app, config){
-    var publicDir = path.join(config.rootPath, 'public');
+
+    var publicDir = path.join(config.rootPath, '/public');
+
+    console.log(path.join(config.rootPath, '/public'));
+
     app.use(compass({
-        project: publicDir
+        project: path.join(config.rootPath, '/public'),
+        cache: false
     }));
 
     app.use(express.static( publicDir ));
 
     app.use(logger('dev'));
     app.use(cookieParser());
+
     app.use(bodyParser.urlencoded({
         extended: true
     }));
+
     app.use(bodyParser.json());
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.set('views', path.join(config.rootPath, 'server','views'));
+    app.set('views', path.join(config.rootPath, '/server','views'));
     app.set('view engine', 'jade');
 };

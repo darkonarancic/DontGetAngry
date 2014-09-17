@@ -36,7 +36,9 @@ module.exports = function(app, io, User, config){
         gameObj.joinCurrentGame(socket, socket.request.session.passport.user);
 
         gameObj.createGame(socket, socket.request.session.passport.user);
-        
+
+        gameObj.leaveCurrentGame(socket, socket.request.session.passport.user);
+
         /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
 
     });
@@ -77,6 +79,7 @@ module.exports = function(app, io, User, config){
                         gameStatus: "created",
                         gameOwnerId: userId
                     }, function(err, game){
+                        var gameId = game._id;
                         if(err){
                             /*res.status(404);
                             res.json({
@@ -87,9 +90,9 @@ module.exports = function(app, io, User, config){
                         else {
                             gameStatus = game.gameStatus;
                             UsersGame.create({
-                                gameId: game._id,
+                                gameId: gameId,
                                 playerId: userId
-                            }, function(err, user){
+                            }, function(err, game){
                                 if(err){
                                     /*res.status(404);
                                     res.json({
@@ -99,7 +102,7 @@ module.exports = function(app, io, User, config){
                                 }
                                 else {
                                     UsersInGame.create({
-                                        gameId: game._id,
+                                        gameId: gameId,
                                         numberOfPlayers: 1,
                                         gameOwner: userObj.username,
                                         gameCreated: true
@@ -112,18 +115,29 @@ module.exports = function(app, io, User, config){
                                             });*/
                                         }
                                         else {
-                                            getAllCreatedGames();
-                                            socket.emit('createdGameResponse', {
-                                                gameStatus: gameStatus,
-                                                gameOwner: game.gameOwner,
-                                                gameCreated: game.gameCreated,
-                                                render: false
+                                            var gameNameId = userObj.username + gameId;
+
+                                            games[gameNameId] = [];
+                                            games[gameNameId].push({
+                                                gameOwnerName: userObj.username,
+                                                usersInGameId: gameId,
+                                                gameId: gameNameId,
+                                                game: {}
                                             });
-                                            //players[socket.id] = userId;
-                                            games[userObj.username + game.gameId] = [];
-                                            games[userObj.username + game.gameId].push(userId);
-                                            gameRooms.push(userObj.username + game.gameId);
-                                            socket.join(userObj.username + game.gameId);
+
+                                            games[gameNameId][0].game.players = [];
+                                            games[gameNameId][0].game.players.push({
+                                                userId: userId,
+                                                username: userObj.username,
+                                                gameOwner: true
+                                            });
+
+                                            socket.emit('createdGameResponse', games[gameNameId][0]);
+
+                                            gameRooms.push(gameNameId);
+                                            socket.join(gameNameId);
+
+                                            getAllCreatedGames();
                                         }
                                     });
 
@@ -149,20 +163,78 @@ module.exports = function(app, io, User, config){
                 }
                 socket.join(game, function(err){
                     if(!err){
-                        //players[socket.id] = userId;
-                        games[game].push(userId);
-                        socket.broadcast.to(game).emit("joinedGameResponse", games[game]);
-                        socket.emit('joinedGameResponse', games[game]);
+                        User.findOne({ _id: userId }, function(err, user){
+                            if(err) {
+                                /*res.status(404);
+                                res.json({
+                                    status: false,
+                                    msg: 'There is no user with that ID!'
+                                })*/
+                            }
+                            else {
+                                var userObj = user;
+                                games[game][0].game.players.push({ userId: userId, username: userObj.username, gameOwner: false });
+
+                                socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
+                                socket.emit('joinedGameResponse', games[game][0]);
+                            }
+                        });
                     }
                 });
 
             }
         });
     };
+    gameObj.leaveCurrentGame = function(socket, userId){
+        socket.on('leave', function(gameId){
+            if(gameId){
+                //join user to the game
+                /*if(gameRooms[socket.id] && gameRooms[socket.id] !== gameId.id){
+                 socket.leave(gameRooms[socket.id]);
+                 }*/
+                var game = gameId.id;
 
-   /* gameObj.joinRoom = function(socket, userId){
-        currentGame[socket.id] =
-    };*/
+                socket.leave(game, function(err){
+                    if(!err){
+                        var playersInPadding = games[game][0].game.players;
+                        //games[game][0].game.players[userId].push({ userId: userId, username: userObj.username, gameOwner: false });
+
+                        for(player in playersInPadding) {
+                            if(playersInPadding[player].userId === userId){
+                                if(playersInPadding[player].gameOwner){
+                                    Game.remove({ gameOwnerId: userId }, function(err){
+                                        if(!err){
+                                            console.log("game deleted");
+                                        }
+                                    });
+                                    UsersInGame.remove({ gameId: games[game][0].usersInGameId }, function(err){
+                                        if(!err){
+                                            console.log("UsersInGame deleted");
+                                        }
+                                    });
+                                    UsersGame.remove({ gameId: games[game][0].usersInGameId }, function(err){
+                                        if(!err){
+                                            console.log("UsersGame deleted");
+                                        }
+                                    });
+                                    games[game].pop();
+                                    getAllCreatedGames();
+                                    socket.emit('createdGameResponse', {});
+                                }
+                                else {
+                                    games[game][0].game.players.splice(player, 1);
+                                }
+                            }
+                        }
+
+                        socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
+
+                    }
+                });
+
+            }
+        });
+    };
 
     app.post('/getAllGames', function(req, res){
         UsersInGame.find({}, function(err, games){
