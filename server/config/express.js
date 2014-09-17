@@ -7,12 +7,14 @@ var express = require('express'),
     cookieParser = require('cookie-parser'),
     session = require('express-session');
 
+
 module.exports = function(app, config){
+    var publicDir = path.join(config.rootPath, 'public');
     app.use(compass({
-        project: path.join(config.rootPath, '/public')
+        project: publicDir
     }));
 
-    app.use(express.static(config.rootPath + '/public' ));
+    app.use(express.static( publicDir ));
 
     app.use(logger('dev'));
     app.use(cookieParser());
@@ -23,6 +25,6 @@ module.exports = function(app, config){
     app.use(passport.initialize());
     app.use(passport.session());
 
-    app.set('views', config.rootPath + '/server/views');
+    app.set('views', path.join(config.rootPath, 'server','views'));
     app.set('view engine', 'jade');
 };

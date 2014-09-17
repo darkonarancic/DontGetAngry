@@ -28,11 +28,11 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
         gameService.joinGame(button.game.gameId);
     };
 
-    $scope.joiningGameResponse = function(){
+    $scope.joiningGame = function(){
         gameService.joiningGameResponse().then(
             function(data){
                 console.log(data);
-                $scope.joiningGameResponse();
+                $scope.joiningGame();
             },
             function(status){
                 console.log(status);
@@ -52,12 +52,29 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
     gameService.createYouOwnGame().then(
         function(data){
             console.log(data);
+
+            if(data.gameCreated){
+                $('#gamePlayersModal').modal('show');
+                $scope.currentGameObj = data;
+            }
         },
         function(status){
             console.log(status);
         }
     );
 
+    $scope.clearBoard = function(){
+        gameService.removeGames().then(
+            function(data){
+                console.log(data);
+            },
+            function(status){
+                console.log(status);
+            }
+        );
+    };
+
     $scope.getTheGame();
-    $scope.joiningGameResponse();
+    $scope.joiningGame();
+
 }]);

@@ -2,9 +2,10 @@ var mongoose = require('mongoose'),
     sha1 = require('sha1');
 
 
-module.exports = function(app, io, User){
+module.exports = function(app, io, User, config){
     var gameObj = {};
     var players = [];
+    var games = [];
     var gameRooms = [];
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
@@ -19,7 +20,8 @@ module.exports = function(app, io, User){
     var usersInGameCount = mongoose.Schema({
         gameId: {type: String, required: true},
         numberOfPlayers: {type: Number, required: true},
-        gameOwner: {type: String, required: true}
+        gameOwner: {type: String, required: true},
+        gameCreated: {type: Boolean, required: true}
     });
 
 
@@ -76,11 +78,11 @@ module.exports = function(app, io, User){
                         gameOwnerId: userId
                     }, function(err, game){
                         if(err){
-                            res.status(404);
+                            /*res.status(404);
                             res.json({
                                 msg: 'Game can\'t be created, please try again!',
                                 status: false
-                            });
+                            });*/
                         }
                         else {
                             gameStatus = game.gameStatus;
@@ -89,33 +91,39 @@ module.exports = function(app, io, User){
                                 playerId: userId
                             }, function(err, user){
                                 if(err){
-                                    res.status(404);
+                                    /*res.status(404);
                                     res.json({
                                         msg: 'Game can\'t be created, please try again!',
                                         status: false
-                                    });
+                                    });*/
                                 }
                                 else {
                                     UsersInGame.create({
                                         gameId: game._id,
                                         numberOfPlayers: 1,
-                                        gameOwner: userObj.username
+                                        gameOwner: userObj.username,
+                                        gameCreated: true
                                     }, function(err, game){
                                         if(err){
-                                            res.status(404);
+                                            /*res.status(404);
                                             res.json({
                                                 msg: 'Game can\'t be created, please try again!',
                                                 status: false
-                                            });
+                                            });*/
                                         }
                                         else {
                                             getAllCreatedGames();
                                             socket.emit('createdGameResponse', {
-                                                gameStatus: gameStatus
+                                                gameStatus: gameStatus,
+                                                gameOwner: game.gameOwner,
+                                                gameCreated: game.gameCreated,
+                                                render: false
                                             });
-                                            players[socket.id] = userObj.username;
-                                            gameRooms.push(userObj.username + userId);
-                                            socket.join(userObj.username + userId);
+                                            //players[socket.id] = userId;
+                                            games[userObj.username + game.gameId] = [];
+                                            games[userObj.username + game.gameId].push(userId);
+                                            gameRooms.push(userObj.username + game.gameId);
+                                            socket.join(userObj.username + game.gameId);
                                         }
                                     });
 
@@ -135,13 +143,16 @@ module.exports = function(app, io, User){
                 /*if(gameRooms[socket.id] && gameRooms[socket.id] !== gameId.id){
                     socket.leave(gameRooms[socket.id]);
                 }*/
-                var gameId = gameId.id;
-                if(gameRooms.indexOf(gameId) !== -1){
-                    gameRooms.push(gameId);
+                var game = gameId.id;
+                if(gameRooms.indexOf(game) === -1){
+                    gameRooms.push(game);
                 }
-                socket.join(gameId, function(err){
+                socket.join(game, function(err){
                     if(!err){
-                        socket.broadcast.to(gameId).emit("joinedGameResponse", userId);
+                        //players[socket.id] = userId;
+                        games[game].push(userId);
+                        socket.broadcast.to(game).emit("joinedGameResponse", games[game]);
+                        socket.emit('joinedGameResponse', games[game]);
                     }
                 });
 
@@ -154,13 +165,13 @@ module.exports = function(app, io, User){
     };*/
 
     app.post('/getAllGames', function(req, res){
-        UsersInGame.find({ numberOfPlayers: { $lt: 4 }}, function(err, games){
+        UsersInGame.find({}, function(err, games){
             if(err){
-                res.status(404);
+                /*res.status(404);
                 res.json({
                     msg: 'Game can\'t be created, please try again!',
                     status: false
-                });
+                });*/
             }
             else {
                 var gameNames = [];
@@ -173,6 +184,14 @@ module.exports = function(app, io, User){
                 res.json({ games: gameNames });
             }
         });
+    });
+
+    //delete all games
+    app.post('/removeAllGames', function(req, res){
+        mongoose.connections[0].collections.games.drop();
+        mongoose.connections[0].collections.usersingamecounts.drop();
+        mongoose.connections[0].collections.usersingames.drop();
+        getAllCreatedGames();
     });
 
     //get all created games width less than 4 players

@@ -80,6 +80,19 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
             });
 
             return deferred.promise;
+        },
+        removeGames: function(){
+            var deferred = $q.defer();
+
+            $http.post('/removeAllGames')
+                .success(function(data){
+                    deferred.resolve(data);
+                })
+                .error(function(status){
+                    deferred.reject(status);
+                });
+
+            return deferred.promise;
         }
     }
 }]);
