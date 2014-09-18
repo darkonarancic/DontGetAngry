@@ -9,7 +9,8 @@ module.exports = function(app, io, User, config){
     var gameRooms = [];
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
-        gameOwnerId: {type: String, required: true, unique: true}
+        gameOwnerId: {type: String, required: true, unique: true},
+        gameOwner: {type: String, required: true}
     });
 
     var usersInGame = mongoose.Schema({
@@ -27,7 +28,7 @@ module.exports = function(app, io, User, config){
 
     var Game = mongoose.model('games', gameSchema);
     var UsersGame = mongoose.model('usersInGame', usersInGame);
-    var UsersInGame = mongoose.model('usersInGameCount', usersInGameCount);
+    //var UsersInGame = mongoose.model('usersInGameCount', usersInGameCount);
 
     var currentGame = [];
 
@@ -77,9 +78,10 @@ module.exports = function(app, io, User, config){
                 else {
                     Game.create({
                         gameStatus: "created",
-                        gameOwnerId: userId
+                        gameOwnerId: userId,
+                        gameOwner: userObj.username
                     }, function(err, game){
-                        var gameId = game._id;
+                        var gameId = userObj.username + userId;
                         if(err){
                             /*res.status(404);
                             res.json({
@@ -101,45 +103,47 @@ module.exports = function(app, io, User, config){
                                     });*/
                                 }
                                 else {
-                                    UsersInGame.create({
+                                    var gameNameId = gameId;
+
+                                    games[gameNameId] = [];
+                                    games[gameNameId].push({
+                                        gameOwnerName: userObj.username,
+                                        usersInGameId: gameId,
+                                        gameId: gameNameId,
+                                        game: {}
+                                    });
+
+                                    games[gameNameId][0].game.players = [];
+                                    games[gameNameId][0].game.players.push({
+                                        userId: userId,
+                                        username: userObj.username,
+                                        gameOwner: true,
+                                        btnText: "I'm Ready..."
+                                    });
+
+                                    socket.emit('createdGameResponse', games[gameNameId][0]);
+
+                                    gameRooms.push(gameNameId);
+                                    socket.join(gameNameId);
+
+                                    getAllCreatedGames();
+                                    /*UsersInGame.create({
                                         gameId: gameId,
                                         numberOfPlayers: 1,
                                         gameOwner: userObj.username,
                                         gameCreated: true
                                     }, function(err, game){
                                         if(err){
-                                            /*res.status(404);
+                                            *//*res.status(404);
                                             res.json({
                                                 msg: 'Game can\'t be created, please try again!',
                                                 status: false
-                                            });*/
+                                            });*//*
                                         }
                                         else {
-                                            var gameNameId = userObj.username + gameId;
 
-                                            games[gameNameId] = [];
-                                            games[gameNameId].push({
-                                                gameOwnerName: userObj.username,
-                                                usersInGameId: gameId,
-                                                gameId: gameNameId,
-                                                game: {}
-                                            });
-
-                                            games[gameNameId][0].game.players = [];
-                                            games[gameNameId][0].game.players.push({
-                                                userId: userId,
-                                                username: userObj.username,
-                                                gameOwner: true
-                                            });
-
-                                            socket.emit('createdGameResponse', games[gameNameId][0]);
-
-                                            gameRooms.push(gameNameId);
-                                            socket.join(gameNameId);
-
-                                            getAllCreatedGames();
                                         }
-                                    });
+                                    });*/
 
                                 }
                             });
@@ -172,11 +176,24 @@ module.exports = function(app, io, User, config){
                                 })*/
                             }
                             else {
-                                var userObj = user;
-                                games[game][0].game.players.push({ userId: userId, username: userObj.username, gameOwner: false });
+                                UsersGame.create({
+                                    gameId: games[game][0].usersInGameId,
+                                    playerId: userId
+                                }, function(err){
+                                    if(!err){
+                                        var userObj = user;
+                                        games[game][0].game.players.push({
+                                            userId: userId,
+                                            username: userObj.username,
+                                            gameOwner: false,
+                                            btnText: "I'm Ready..."
+                                        });
 
-                                socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
-                                socket.emit('joinedGameResponse', games[game][0]);
+
+                                        socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
+                                        socket.emit('joinedGameResponse', games[game][0]);
+                                    }
+                                });
                             }
                         });
                     }
@@ -207,11 +224,11 @@ module.exports = function(app, io, User, config){
                                             console.log("game deleted");
                                         }
                                     });
-                                    UsersInGame.remove({ gameId: games[game][0].usersInGameId }, function(err){
+                                    /*UsersInGame.remove({ gameId: games[game][0].usersInGameId }, function(err){
                                         if(!err){
                                             console.log("UsersInGame deleted");
                                         }
-                                    });
+                                    });*/
                                     UsersGame.remove({ gameId: games[game][0].usersInGameId }, function(err){
                                         if(!err){
                                             console.log("UsersGame deleted");
@@ -237,7 +254,7 @@ module.exports = function(app, io, User, config){
     };
 
     app.post('/getAllGames', function(req, res){
-        UsersInGame.find({}, function(err, games){
+        Game.find({  }, function(err, allGames){
             if(err){
                 /*res.status(404);
                 res.json({
@@ -247,10 +264,10 @@ module.exports = function(app, io, User, config){
             }
             else {
                 var gameNames = [];
-                for(game in games){
+                for(game in allGames){
                     gameNames[game] = {
-                        gameId: games[game].gameOwner + games[game].gameId,
-                        gameName: games[game].gameOwner
+                        gameId: allGames[0]._doc.gameOwner + allGames[0]._doc.gameOwnerId,
+                        gameName: allGames[0]._doc.gameOwner
                     };
                 }
                 res.json({ games: gameNames });
@@ -261,14 +278,14 @@ module.exports = function(app, io, User, config){
     //delete all games
     app.post('/removeAllGames', function(req, res){
         mongoose.connections[0].collections.games.drop();
-        mongoose.connections[0].collections.usersingamecounts.drop();
+        /*mongoose.connections[0].collections.usersingamecounts.drop();*/
         mongoose.connections[0].collections.usersingames.drop();
         getAllCreatedGames();
     });
 
     //get all created games width less than 4 players
     function getAllCreatedGames(){
-        UsersInGame.find({ numberOfPlayers: { $lt: 4 }}, function(err, games){
+        Game.find({}, function(err, games){
             if(err){
                 res.status(404);
                 res.json({
@@ -280,8 +297,8 @@ module.exports = function(app, io, User, config){
                 var gameNames = [];
                 for(game in games){
                     gameNames[game] = {
-                        gameId: games[game].gameOwner + games[game].gameId,
-                        gameName: games[game].gameOwner
+                        gameId: games[game]._doc.gameOwner + games[game]._doc.gameOwnerId,
+                        gameName: games[game]._doc.gameOwner
                     };
                 }
                 io.sockets.emit('availableGames', {

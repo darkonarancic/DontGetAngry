@@ -30,7 +30,8 @@ div(class="modal", id="gamePlayersModal")
                 div(class="row")
                     div(class="col-xs-12 row-space", ng-repeat="player in currentGameObj.game.players")
                         span(class="pull-left") {{ player.username }}
-                        button(class="btn btn-success pull-right", type="button") I'm ready...
+                        button(class="btn btn-success pull-right", type="button" ng-if="player.username === user.username ", ng-click="") {{ player.btnText }}
+                        spann(class="btn btn-success pull-right", disabled, ng-if="player.username !== user.username ") {{ player.btnText }}
 
             div(class="modal-footer")
                 button(type="button", class="btn btn-default", data-dismiss="modal", ng-click="leaveGame(currentGameObj.gameId);") Close
