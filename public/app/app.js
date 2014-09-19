@@ -18,6 +18,10 @@ angryApp.config(function($routeProvider, $locationProvider){
     when('/home', {
         templateUrl: '/partials/home',
         controller: 'homeCtrl'
+    }).
+    when('/game', {
+        templateUrl: '/partials/game',
+        controller: 'gameCtrl'
     });
 });
 

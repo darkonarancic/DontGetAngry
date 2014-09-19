@@ -26,12 +26,16 @@ div(class="modal", id="gamePlayersModal")
         div(class="modal-content")
             div(class="modal-header")
                 h4(class="modal-title") {{ currentGameObj.gameOwnerName }}
+                    button(class="btn btn-success pull-right",  type="button", ng-if="currentGameObj.gameCanStart && currentGameObj.gameOwnerName === user.username", ng-click="startGame();") Start Game
             div(class="modal-body")
                 div(class="row")
                     div(class="col-xs-12 row-space", ng-repeat="player in currentGameObj.game.players")
                         span(class="pull-left") {{ player.username }}
-                        button(class="btn btn-success pull-right", type="button" ng-if="player.username === user.username ", ng-click="") {{ player.btnText }}
-                        spann(class="btn btn-success pull-right", disabled, ng-if="player.username !== user.username ") {{ player.btnText }}
+                        button(class="btn btn-success pull-right", type="button" ng-if="player.username === user.username && !player.playerReady", ng-click="playerReady(currentGameObj.gameId);") I'm ready...
+                        span(class="btn btn-success pull-right", disabled, ng-if="player.username === user.username && player.playerReady") Ready!
+
+                        span(class="btn btn-success pull-right", disabled, ng-if="player.username !== user.username && !player.playerReady") I'm ready...
+                        span(class="btn btn-success pull-right", disabled, ng-if="player.username !== user.username && player.playerReady") Ready!
 
             div(class="modal-footer")
                 button(type="button", class="btn btn-default", data-dismiss="modal", ng-click="leaveGame(currentGameObj.gameId);") Close

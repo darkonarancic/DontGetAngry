@@ -86,6 +86,11 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
 
             io.emit('leave', { id: gameId});
         },
+        userIsReady: function(gameId){
+            var io = this.getSocket().getInstance();
+
+            io.emit('userIsReady', { id: gameId });
+        },
         removeGames: function(){
             var deferred = $q.defer();
 

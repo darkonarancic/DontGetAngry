@@ -77,4 +77,101 @@ p {
   margin: 5px 0;
 }
 
+.game-table .dice .die{
+  background-image:url('../img/dice-white.png');
+}
+
+@media(-webkit-min-device-pixel-ratio:1.5),(min--moz-device-pixel-ratio:1.5),(-o-min-device-pixel-ratio:3/2),(min-resolution:1.5dppx){
+  .game-table .dice .die{
+    background-image:url("../img/dice-white@2x.png");
+    background-size:916px 50px;
+  }
+
+}
+
+
+.game-table .die{
+  width:50px;
+  height:50px;
+  overflow:hidden;
+  background-repeat:no-repeat;
+  background-position:0 0;
+  display:inline-block;
+  margin:0 5px;
+  cursor:pointer
+}
+
+.game-table .die.die2{
+  background-position:-50px 0
+}
+
+.game-table .die.die3{
+  background-position:-100px 0
+}
+
+.game-table .die.die4{
+  background-position:-150px 0
+}
+
+.game-table .die.die5{
+  background-position:-202px 0
+}
+
+.game-table .die.die6{
+  background-position:-255px 0
+}
+
+.game-table .die.die7{
+  background-position:-305px 0
+}
+
+.game-table .die.die8{
+  background-position:-356px 0
+}
+
+.game-table .die.die9{
+  background-position:-408px 0
+}
+
+.game-table .die.die10{
+  background-position:-458px 0
+}
+
+.game-table .die.die11{
+  background-position:-509px 0
+}
+
+.game-table .die.die12{
+  background-position:-560px 0
+}
+
+.game-table .die.die13{
+  background-position:-612px 0
+}
+
+.game-table .die.die14{
+  background-position:-662px 0
+}
+
+.game-table .die.die15{
+  background-position:-714px 0
+}
+
+.game-table .die.die16{
+  background-position:-764px 0
+}
+
+.game-table .die.die17{
+  background-position:-815px 0
+}
+
+.game-table .die.die18{
+  background-position:-866px 0
+}
+
+.game-table .die.disabled{
+  opacity:.3
+}
+
+
 

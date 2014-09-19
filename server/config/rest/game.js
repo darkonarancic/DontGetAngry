@@ -15,7 +15,8 @@ module.exports = function(app, io, User, config){
 
     var usersInGame = mongoose.Schema({
         gameId: {type: String, required: true},
-        playerId: {type: String, required: true, unique: true}
+        playerId: {type: String, required: true, unique: true},
+        playerReady: {type: Boolean, required: true}
     });
 
     var usersInGameCount = mongoose.Schema({
@@ -39,6 +40,8 @@ module.exports = function(app, io, User, config){
         gameObj.createGame(socket, socket.request.session.passport.user);
 
         gameObj.leaveCurrentGame(socket, socket.request.session.passport.user);
+
+        gameObj.userIsReadyForGame(socket, socket.request.session.passport.user);
 
         /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
 
@@ -93,7 +96,8 @@ module.exports = function(app, io, User, config){
                             gameStatus = game.gameStatus;
                             UsersGame.create({
                                 gameId: gameId,
-                                playerId: userId
+                                playerId: userId,
+                                playerReady: false
                             }, function(err, game){
                                 if(err){
                                     /*res.status(404);
@@ -110,6 +114,7 @@ module.exports = function(app, io, User, config){
                                         gameOwnerName: userObj.username,
                                         usersInGameId: gameId,
                                         gameId: gameNameId,
+                                        gameCanStart: false,
                                         game: {}
                                     });
 
@@ -118,7 +123,7 @@ module.exports = function(app, io, User, config){
                                         userId: userId,
                                         username: userObj.username,
                                         gameOwner: true,
-                                        btnText: "I'm Ready..."
+                                        playerReady: game.playerReady
                                     });
 
                                     socket.emit('createdGameResponse', games[gameNameId][0]);
@@ -178,15 +183,17 @@ module.exports = function(app, io, User, config){
                             else {
                                 UsersGame.create({
                                     gameId: games[game][0].usersInGameId,
-                                    playerId: userId
+                                    playerId: userId,
+                                    playerReady: false
                                 }, function(err){
                                     if(!err){
                                         var userObj = user;
+                                        games[game][0].gameCanStart = false;
                                         games[game][0].game.players.push({
                                             userId: userId,
                                             username: userObj.username,
                                             gameOwner: false,
-                                            btnText: "I'm Ready..."
+                                            playerReady: false
                                         });
 
 
@@ -202,6 +209,7 @@ module.exports = function(app, io, User, config){
             }
         });
     };
+
     gameObj.leaveCurrentGame = function(socket, userId){
         socket.on('leave', function(gameId){
             if(gameId){
@@ -250,6 +258,39 @@ module.exports = function(app, io, User, config){
                 });
 
             }
+        });
+    };
+
+    gameObj.userIsReadyForGame = function(socket, userId){
+        socket.on('userIsReady', function(game) {
+            UsersGame.update({ playerId: userId }, { playerReady: true }, { multi: true }, function (err, user) {
+                if (!err) {
+                    var allPlayers = games[game.id][0].game.players;
+                    var gameStartStatuses = [];
+                    var gameCanStart = false;
+                    for(var player in allPlayers){
+                        if(allPlayers[player].userId === userId){
+                            allPlayers[player].playerReady = true;
+                        }
+                        gameStartStatuses.push(allPlayers[player].playerReady);
+                    }
+
+                    for(var status in gameStartStatuses){
+                        if(!gameStartStatuses[status]){
+                            gameCanStart = gameStartStatuses[status];
+                            break;
+                        }
+                        else {
+                            gameCanStart = gameStartStatuses[status];
+                        }
+                    }
+
+                    games[game.id][0].gameCanStart = gameCanStart;
+
+                    socket.broadcast.to(game.id).emit("joinedGameResponse", games[game.id][0]);
+                    socket.emit('joinedGameResponse', games[game.id][0]);
+                }
+            });
         });
     };
 

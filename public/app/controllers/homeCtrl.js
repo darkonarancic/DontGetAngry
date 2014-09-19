@@ -1,4 +1,4 @@
-angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameService){
+angryApp.controller('homeCtrl', ['$scope', 'gameService', '$location', function($scope, gameService, $location){
     $scope.user = gameService.getSessionDetails();
     $scope.gameObj = {};
 
@@ -31,7 +31,6 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
     $scope.joiningGame = function(){
         gameService.joiningGameResponse().then(
             function(data){
-                console.log(data);
                 var modal = document.getElementById('gamePlayersModal');
                 var style = window.getComputedStyle(modal);
 
@@ -57,6 +56,10 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
                 console.log(status);
             }
         );
+    };
+
+    $scope.playerReady = function(gameId){
+      gameService.userIsReady(gameId);
     };
 
     /*$scope.closeGame = function(){
@@ -116,6 +119,10 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', function($scope, gameS
 
     $scope.leaveGame = function(gameId){
         gameService.leaveCurrentGame(gameId);
+    };
+
+    $scope.startGame = function(){
+        $location.path('/game');
     };
 
     $scope.getTheGame();
