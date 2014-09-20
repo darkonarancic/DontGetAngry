@@ -7,22 +7,29 @@ module.exports = function(app, io, User, config){
     var players = [];
     var games = [];
     var gameRooms = [];
+    var chatMessages = [];
+
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
         gameOwnerId: {type: String, required: true, unique: true},
-        gameOwner: {type: String, required: true}
+        gameOwnerName: {type: String, required: true},
+        gameOwner: {type: String, required: true},
+        gameCanStart: {type: Boolean, required: true}
     });
 
     var usersInGame = mongoose.Schema({
         gameId: {type: String, required: true},
         playerId: {type: String, required: true, unique: true},
+        playerName: {type: String, required: true},
+        gameOwner: {type: Boolean, required: true},
         playerReady: {type: Boolean, required: true}
     });
+
 
     var usersInGameCount = mongoose.Schema({
         gameId: {type: String, required: true},
         numberOfPlayers: {type: Number, required: true},
-        gameOwner: {type: String, required: true},
+        gameOwner: {type: Boolean, required: true},
         gameCreated: {type: Boolean, required: true}
     });
 
@@ -35,17 +42,85 @@ module.exports = function(app, io, User, config){
 
     io.on("connection", function(socket){
 
-        gameObj.joinCurrentGame(socket, socket.request.session.passport.user);
+            gameObj.joinCurrentGame(socket, socket.request.session.passport.user);
 
-        gameObj.createGame(socket, socket.request.session.passport.user);
+            gameObj.createGame(socket, socket.request.session.passport.user);
 
-        gameObj.leaveCurrentGame(socket, socket.request.session.passport.user);
+            gameObj.leaveCurrentGame(socket, socket.request.session.passport.user);
 
-        gameObj.userIsReadyForGame(socket, socket.request.session.passport.user);
+            gameObj.userIsReadyForGame(socket, socket.request.session.passport.user);
 
-        /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
+            gameObj.canGameStart(socket, socket.request.session.passport.user);
+
+            gameObj.rollDice(socket, socket.request.session.passport.user);
+
+            gameObj.sendChatMsg(socket, socket.request.session.passport.user);
+
+            gameObj.getGameObject(socket, socket.request.session.passport.user);
+
+            /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
 
     });
+
+    gameObj.getGameObject = function(socket, userId){
+        Game.find({}, function(err, gameList){
+            if(!err){
+                if(gameList.length){
+                    for(var game in gameList){
+                        var gameRow = gameList[game]._doc;
+                        var _gameId = gameRow.gameOwnerName + gameRow.gameOwnerId;
+
+                        UsersGame.find({ gameId: _gameId }, function(err, players){
+                            if(!err){
+                                games[_gameId] = [];
+                                games[_gameId].push({
+                                    gameOwnerName: gameRow.gameOwnerName,
+                                    usersInGameId: gameRow.gameOwnerId,
+                                    gameId: _gameId,
+                                    gameCanStart: gameRow.gameCanStart,
+                                    game: {}
+                                });
+
+                                games[_gameId][0].game.players = [];
+
+                                var self = false;
+
+                                for(var player in players){
+                                    if(players[player].playerId === userId){
+                                        self = players[player].playerName;
+                                    }
+                                    games[_gameId][0].game.players.push({
+                                        userId: players[player].playerId,
+                                        username: players[player].playerName,
+                                        gameOwner: gameRow.gameOwner,
+                                        playerReady: players[player].playerReady
+                                    });
+                                }
+
+                                socket.game = games[_gameId];
+                                if(self) {
+                                    socket.playerName = self;
+                                }
+
+                                if(gameRow.gameOwnerId === userId){
+                                    socket.emit('createdGameResponse', games[_gameId][0]);
+                                }
+                                else {
+                                    socket.broadcast.to(game).emit("joinedGameResponse", games[_gameId][0]);
+                                    socket.emit('joinedGameResponse', games[_gameId][0]);
+                                }
+
+                                gameRooms.push(_gameId);
+                                socket.join(_gameId);
+
+                                getAllCreatedGames();
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    };
 
     gameObj.createGame = function(socket, userId){
         socket.on('createGame', function(data){
@@ -82,9 +157,12 @@ module.exports = function(app, io, User, config){
                     Game.create({
                         gameStatus: "created",
                         gameOwnerId: userId,
-                        gameOwner: userObj.username
+                        gameOwnerName: userObj.username,
+                        gameOwner: true,
+                        gameCanStart: false
                     }, function(err, game){
                         var gameId = userObj.username + userId;
+                        var gameCreated = game; // when game is created this object will be returned
                         if(err){
                             /*res.status(404);
                             res.json({
@@ -97,6 +175,8 @@ module.exports = function(app, io, User, config){
                             UsersGame.create({
                                 gameId: gameId,
                                 playerId: userId,
+                                playerName: userObj.username,
+                                gameOwner: true,
                                 playerReady: false
                             }, function(err, game){
                                 if(err){
@@ -112,9 +192,9 @@ module.exports = function(app, io, User, config){
                                     games[gameNameId] = [];
                                     games[gameNameId].push({
                                         gameOwnerName: userObj.username,
-                                        usersInGameId: gameId,
+                                        usersInGameId: gameCreated.gameOwnerId,
                                         gameId: gameNameId,
-                                        gameCanStart: false,
+                                        gameCanStart: gameCreated.gameCanStart,
                                         game: {}
                                     });
 
@@ -122,9 +202,13 @@ module.exports = function(app, io, User, config){
                                     games[gameNameId][0].game.players.push({
                                         userId: userId,
                                         username: userObj.username,
-                                        gameOwner: true,
+                                        gameOwner: gameCreated.gameOwner,
                                         playerReady: game.playerReady
                                     });
+
+                                    socket.playerName = userObj.username;
+
+                                    socket.game = games[gameNameId];
 
                                     socket.emit('createdGameResponse', games[gameNameId][0]);
 
@@ -184,6 +268,8 @@ module.exports = function(app, io, User, config){
                                 UsersGame.create({
                                     gameId: games[game][0].usersInGameId,
                                     playerId: userId,
+                                    playerName: user.username,
+                                    gameOwner: false,
                                     playerReady: false
                                 }, function(err){
                                     if(!err){
@@ -191,11 +277,14 @@ module.exports = function(app, io, User, config){
                                         games[game][0].gameCanStart = false;
                                         games[game][0].game.players.push({
                                             userId: userId,
-                                            username: userObj.username,
+                                            username: user.username,
                                             gameOwner: false,
                                             playerReady: false
                                         });
 
+                                        socket.playerName = user.username;
+
+                                        socket.game = games[game][0];
 
                                         socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
                                         socket.emit('joinedGameResponse', games[game][0]);
@@ -252,6 +341,8 @@ module.exports = function(app, io, User, config){
                             }
                         }
 
+                        socket.game = {};
+
                         socket.broadcast.to(game).emit("joinedGameResponse", games[game][0]);
 
                     }
@@ -281,11 +372,14 @@ module.exports = function(app, io, User, config){
                             break;
                         }
                         else {
+                            Game.update()
                             gameCanStart = gameStartStatuses[status];
                         }
                     }
 
                     games[game.id][0].gameCanStart = gameCanStart;
+
+                    socket.game = games[game.id];
 
                     socket.broadcast.to(game.id).emit("joinedGameResponse", games[game.id][0]);
                     socket.emit('joinedGameResponse', games[game.id][0]);
@@ -293,6 +387,34 @@ module.exports = function(app, io, User, config){
             });
         });
     };
+
+    gameObj.canGameStart = function(socket, userId){
+        socket.on('canGameStart', function() {
+            if(socket.game[0].gameCanStart){
+                socket.broadcast.to(socket.game[0].gameId).emit("redirectToTheGame", { goToTable: true } );
+                socket.emit('redirectToTheGame', { goToTable: true });
+            }
+        })
+    };
+
+    gameObj.rollDice = function(socket, userId){
+        socket.on('rollDice', function() {
+            var randomNumber = Math.floor(Math.random()*6) + 1;
+            socket.broadcast.to(socket.game[0].gameId).emit("newDiceNumber", { diceNumber: randomNumber } );
+            socket.emit('newDiceNumber', { diceNumber: randomNumber });
+        });
+    };
+
+    gameObj.sendChatMsg = function(socket, userId){
+        socket.on('sendChatMsg', function(msg) {
+            chatMessages.push({
+                sender: socket.playerName,
+                text: msg.msg
+            });
+            socket.broadcast.to(socket.game[0].gameId).emit("getAllChatMsg", chatMessages);
+            socket.emit('getAllChatMsg', chatMessages);
+        });
+    }
 
     app.post('/getAllGames', function(req, res){
         Game.find({  }, function(err, allGames){
@@ -307,8 +429,8 @@ module.exports = function(app, io, User, config){
                 var gameNames = [];
                 for(game in allGames){
                     gameNames[game] = {
-                        gameId: allGames[0]._doc.gameOwner + allGames[0]._doc.gameOwnerId,
-                        gameName: allGames[0]._doc.gameOwner
+                        gameId: allGames[0]._doc.gameOwnerName + allGames[0]._doc.gameOwnerId,
+                        gameName: allGames[0]._doc.gameOwnerName
                     };
                 }
                 res.json({ games: gameNames });
@@ -338,8 +460,8 @@ module.exports = function(app, io, User, config){
                 var gameNames = [];
                 for(game in games){
                     gameNames[game] = {
-                        gameId: games[game]._doc.gameOwner + games[game]._doc.gameOwnerId,
-                        gameName: games[game]._doc.gameOwner
+                        gameId: games[game]._doc.gameOwnerName + games[game]._doc.gameOwnerId,
+                        gameName: games[game]._doc.gameOwnerName
                     };
                 }
                 io.sockets.emit('availableGames', {

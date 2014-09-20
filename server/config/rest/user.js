@@ -5,15 +5,6 @@ var mongoose = require('mongoose'),
 
 module.exports = exports = function(app, io, User){
 
-    io.on("connection", function(socket){
-        if(socket.request.session.passport.user)
-        {
-            io.sockets.emit('opaBoskic', {
-                user: socket.request.session.passport
-            });
-        }
-    });
-
     passport.use(new LocalStrategy(
         function(username, password, done){
             User.findOne({ username: username, password: sha1(password) }).exec(function(err, user){

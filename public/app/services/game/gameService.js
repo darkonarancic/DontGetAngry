@@ -91,6 +91,36 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
 
             io.emit('userIsReady', { id: gameId });
         },
+        goToGame: function(){
+            var io = this.getSocket().getInstance(),
+                deferred = $q.defer();
+
+            io.on('redirectToTheGame', function(data){
+                deferred.resolve(data);
+            });
+
+            return deferred.promise;
+        },
+        redirectUsersToTheGame: function(){
+            var io = this.getSocket().getInstance();
+
+            io.emit('canGameStart', { });
+        },
+        rollDice: function(){
+            var io = this.getSocket().getInstance();
+
+            io.emit('rollDice', { });
+        },
+        getDiceNumber: function(){
+            var io = this.getSocket().getInstance(),
+                deferred = $q.defer();
+
+            io.on('newDiceNumber', function(data){
+                deferred.resolve(data);
+            });
+
+            return deferred.promise;
+        },
         removeGames: function(){
             var deferred = $q.defer();
 
@@ -101,6 +131,21 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
                 .error(function(status){
                     deferred.reject(status);
                 });
+
+            return deferred.promise;
+        },
+        sendChatMsg: function(msg){
+            var io = this.getSocket().getInstance();
+
+            io.emit('sendChatMsg', { msg: msg });
+        },
+        getChatMsg: function(){
+            var io = this.getSocket().getInstance(),
+                deferred = $q.defer();
+
+            io.on('getAllChatMsg', function(data){
+                deferred.resolve(data);
+            });
 
             return deferred.promise;
         }

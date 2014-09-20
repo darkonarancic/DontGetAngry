@@ -62,24 +62,6 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', '$location', function(
       gameService.userIsReady(gameId);
     };
 
-    /*$scope.closeGame = function(){
-        gameService.closeTheGame().then(
-            function(data){
-                var modal = document.getElementById('gamePlayersModal');
-                var style = window.getComputedStyle(modal);
-
-                if(style.display === 'block'){
-                    $(modal).modal('hide');
-                }
-
-                $scope.currentGameObj = "";
-            },
-            function(status){
-
-            }
-        );
-    };*/
-
     gameService.getAllGames().then(
         function(data){
             $scope.gameObj.games = data.games;
@@ -93,18 +75,39 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', '$location', function(
         function(data){
             console.log(data);
             if(data){
-                $('#gamePlayersModal').modal('show');
+                if(data.gameOwnerName === $scope.user.username){
+                    $('#gamePlayersModal').modal('show');
+                }
                 $scope.currentGameObj = data;
             }
             else {
                 $('#gamePlayersModal').modal('hide');
                 $scope.currentGameObj = "";
             }
+
+            gameService.createYouOwnGame();
         },
         function(status){
             console.log(status);
         }
     );
+
+    gameService.goToGame().then(
+        function(data){
+            if(data.goToTable){
+                $location.path('/game');
+                $('#gamePlayersModal').modal('hide');
+            }
+        },
+        function(status){
+            console.log(status);
+        }
+    );
+
+    $scope.startGame = function(){
+        gameService.redirectUsersToTheGame();
+    };
+
 
     $scope.clearBoard = function(){
         gameService.removeGames().then(
@@ -119,10 +122,6 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', '$location', function(
 
     $scope.leaveGame = function(gameId){
         gameService.leaveCurrentGame(gameId);
-    };
-
-    $scope.startGame = function(){
-        $location.path('/game');
     };
 
     $scope.getTheGame();

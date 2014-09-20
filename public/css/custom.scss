@@ -77,6 +77,10 @@ p {
   margin: 5px 0;
 }
 
+.game-table {
+
+}
+
 .game-table .dice .die{
   background-image:url('../img/dice-white.png');
 }
@@ -88,7 +92,6 @@ p {
   }
 
 }
-
 
 .game-table .die{
   width:50px;
@@ -173,5 +176,42 @@ p {
   opacity:.3
 }
 
+.chat-box {
+  width: 200px;
+  height: 250px;
+  float: left;
+  background: #fff;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  margin: 20px;
+}
 
+.chat-history {
+  width: 100%;
+  height: 175px;
+  float: left;
+  margin: 15px 0 10px 0;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  overflow-y: auto;
+  padding: 5px;
+}
+.chat-history > span {
+  width: 100%;
+  float: left;
+  margin: 0 0 5px 0;
+}
+.chat-history > span strong {
+  width: 100%;
+  float: left;
+  margin: 0 0 2px;
+}
+
+.chat-commands {
+  width: 100%;
+  float: left;
+}
 
