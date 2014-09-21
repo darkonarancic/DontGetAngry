@@ -91,7 +91,8 @@ module.exports = function(app, io, User, config){
                                             username: players[player].playerName,
                                             gameOwner: gameRow.gameOwner,
                                             playerReady: players[player].playerReady,
-                                            playerColor: players[player].playerColor
+                                            playerColor: players[player].playerColor,
+                                            numbOfFigures: 4
                                         });
                                     }
 
@@ -116,8 +117,8 @@ module.exports = function(app, io, User, config){
 
                                     getAllCreatedGames();
 
-                                    socket.broadcast.to(game).emit("getPlayersInTheGameResponse", { players: players } );
-                                    socket.emit('getPlayersInTheGameResponse', { players: players });
+                                    socket.broadcast.to(game).emit("getPlayersInTheGameResponse", { players: games[_gameId][0].game.players } );
+                                    socket.emit('getPlayersInTheGameResponse', { players: games[_gameId][0].game.players });
 
                                     if(!runOnlyOnce){
 
@@ -255,7 +256,8 @@ module.exports = function(app, io, User, config){
                                         username: userObj.username,
                                         gameOwner: gameCreated.gameOwner,
                                         playerReady: game.playerReady,
-                                        playerColor: game.playerColor
+                                        playerColor: game.playerColor,
+                                        numbOfFigures: 4
                                     });
 
                                     socket.playerName = userObj.username;
@@ -335,7 +337,8 @@ module.exports = function(app, io, User, config){
                                             username: user.username,
                                             gameOwner: false,
                                             playerReady: false,
-                                            playerColor: userInGame.playerColor
+                                            playerColor: userInGame.playerColor,
+                                            numbOfFigures: 4
                                         });
 
                                         socket.playerName = user.username;
