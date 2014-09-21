@@ -1,14 +1,17 @@
 var mongoose = require('mongoose'),
-    sha1 = require('sha1');
+    sha1 = require('sha1'),
+    async = require('async');
 
 
 module.exports = function(app, io, User, config){
     var gameObj = {};
     var players = [];
-    var games = [];
+    var games = []; // all games on the game board
     var gameRooms = [];
-    var chatMessages = [];
+    var chatMessages = []; //chat messages between game group
+    var playerColors = ["yellow", "blue", "green", "red"];
 
+    //game schemea for main game
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
         gameOwnerId: {type: String, required: true, unique: true},
@@ -17,21 +20,23 @@ module.exports = function(app, io, User, config){
         gameCanStart: {type: Boolean, required: true}
     });
 
+    //user schema for every user joined the game
     var usersInGame = mongoose.Schema({
         gameId: {type: String, required: true},
         playerId: {type: String, required: true, unique: true},
         playerName: {type: String, required: true},
         gameOwner: {type: Boolean, required: true},
-        playerReady: {type: Boolean, required: true}
+        playerReady: {type: Boolean, required: true},
+        playerColor: {type: String, required: true}
     });
 
 
-    var usersInGameCount = mongoose.Schema({
+    /*var usersInGameCount = mongoose.Schema({
         gameId: {type: String, required: true},
         numberOfPlayers: {type: Number, required: true},
         gameOwner: {type: Boolean, required: true},
         gameCreated: {type: Boolean, required: true}
-    });
+    });*/
 
 
     var Game = mongoose.model('games', gameSchema);
@@ -41,84 +46,129 @@ module.exports = function(app, io, User, config){
     var currentGame = [];
 
     io.on("connection", function(socket){
+        var userId = socket.request.session.passport.user;
+            gameObj.getGameObject(socket, userId);
 
-            gameObj.joinCurrentGame(socket, socket.request.session.passport.user);
-
-            gameObj.createGame(socket, socket.request.session.passport.user);
-
-            gameObj.leaveCurrentGame(socket, socket.request.session.passport.user);
-
-            gameObj.userIsReadyForGame(socket, socket.request.session.passport.user);
-
-            gameObj.canGameStart(socket, socket.request.session.passport.user);
-
-            gameObj.rollDice(socket, socket.request.session.passport.user);
-
-            gameObj.sendChatMsg(socket, socket.request.session.passport.user);
-
-            gameObj.getGameObject(socket, socket.request.session.passport.user);
 
             /*gameObj.joinRoom(socket, socket.request.session.passport.user);*/
 
     });
 
     gameObj.getGameObject = function(socket, userId){
-        Game.find({}, function(err, gameList){
-            if(!err){
-                if(gameList.length){
-                    for(var game in gameList){
-                        var gameRow = gameList[game]._doc;
-                        var _gameId = gameRow.gameOwnerName + gameRow.gameOwnerId;
+        var runOnlyOnce = 0;
+        Game.count({}, function(err, size){
+            if(size){
+                Game.find({}, function(err, gameList){
+                if(!err){
+                    if(gameList.length){
+                        for(var game in gameList){
+                            var gameRow = gameList[game]._doc;
+                            var _gameId = gameRow.gameOwnerName + gameRow.gameOwnerId;
 
-                        UsersGame.find({ gameId: _gameId }, function(err, players){
-                            if(!err){
-                                games[_gameId] = [];
-                                games[_gameId].push({
-                                    gameOwnerName: gameRow.gameOwnerName,
-                                    usersInGameId: gameRow.gameOwnerId,
-                                    gameId: _gameId,
-                                    gameCanStart: gameRow.gameCanStart,
-                                    game: {}
-                                });
-
-                                games[_gameId][0].game.players = [];
-
-                                var self = false;
-
-                                for(var player in players){
-                                    if(players[player].playerId === userId){
-                                        self = players[player].playerName;
-                                    }
-                                    games[_gameId][0].game.players.push({
-                                        userId: players[player].playerId,
-                                        username: players[player].playerName,
-                                        gameOwner: gameRow.gameOwner,
-                                        playerReady: players[player].playerReady
+                            UsersGame.find({ gameId: _gameId }, function(err, players){
+                                if(!err){
+                                    games[_gameId] = [];
+                                    games[_gameId].push({
+                                        gameOwnerName: gameRow.gameOwnerName,
+                                        usersInGameId: gameRow.gameOwnerId,
+                                        gameId: _gameId,
+                                        gameCanStart: gameRow.gameCanStart,
+                                        game: {}
                                     });
+
+                                    games[_gameId][0].game.players = [];
+
+                                    var self = false,
+                                        pColor = "";
+
+                                    for(var player in players){
+                                        if(players[player].playerId === userId){
+                                            self = players[player].playerName;
+                                            pColor = players[player].playerColor;
+                                        }
+                                        games[_gameId][0].game.players.push({
+                                            userId: players[player].playerId,
+                                            username: players[player].playerName,
+                                            gameOwner: gameRow.gameOwner,
+                                            playerReady: players[player].playerReady,
+                                            playerColor: players[player].playerColor
+                                        });
+                                    }
+
+                                    socket.game = games[_gameId];
+
+                                    if(self) {
+                                        socket.playerName = self;
+                                        socket.playerColor = pColor;
+                                    }
+
+                                    if(gameRow.gameOwnerId === userId){
+                                        socket.emit('createdGameResponse', games[_gameId][0]);
+                                    }
+                                    else {
+                                        socket.broadcast.to(game).emit("joinedGameResponse", games[_gameId][0]);
+                                        socket.emit('joinedGameResponse', games[_gameId][0]);
+                                    }
+
+
+                                    gameRooms.push(_gameId);
+                                    socket.join(_gameId);
+
+                                    getAllCreatedGames();
+
+                                    socket.broadcast.to(game).emit("getPlayersInTheGameResponse", { players: players } );
+                                    socket.emit('getPlayersInTheGameResponse', { players: players });
+
+                                    if(!runOnlyOnce){
+
+                                        gameObj.getPlayersInTheGame(socket, userId);
+
+                                        gameObj.joinCurrentGame(socket, userId);
+
+                                        gameObj.createGame(socket, userId);
+
+                                        gameObj.leaveCurrentGame(socket, userId);
+
+                                        gameObj.userIsReadyForGame(socket, userId);
+
+                                        gameObj.canGameStart(socket, userId);
+
+                                        gameObj.rollDice(socket, userId);
+
+                                        gameObj.sendChatMsg(socket, userId);
+
+
+                                        runOnlyOnce = 1;
+                                    }
                                 }
 
-                                socket.game = games[_gameId];
-                                if(self) {
-                                    socket.playerName = self;
-                                }
-
-                                if(gameRow.gameOwnerId === userId){
-                                    socket.emit('createdGameResponse', games[_gameId][0]);
-                                }
-                                else {
-                                    socket.broadcast.to(game).emit("joinedGameResponse", games[_gameId][0]);
-                                    socket.emit('joinedGameResponse', games[_gameId][0]);
-                                }
-
-                                gameRooms.push(_gameId);
-                                socket.join(_gameId);
-
-                                getAllCreatedGames();
-                            }
-                        });
+                            });
+                        }
                     }
                 }
-            }
+
+            });
+        }
+        else {
+            gameObj.joinCurrentGame(socket, userId);
+
+            gameObj.createGame(socket, userId);
+
+            gameObj.leaveCurrentGame(socket, userId);
+
+            gameObj.userIsReadyForGame(socket, userId);
+
+            gameObj.canGameStart(socket, userId);
+
+            gameObj.rollDice(socket, userId);
+
+            gameObj.sendChatMsg(socket, userId);
+
+            gameObj.getPlayersInTheGame(socket, userId);
+
+            //socket.emit('getPlayersInTheGame', {});
+        }
+
         });
     };
 
@@ -177,7 +227,8 @@ module.exports = function(app, io, User, config){
                                 playerId: userId,
                                 playerName: userObj.username,
                                 gameOwner: true,
-                                playerReady: false
+                                playerReady: false,
+                                playerColor: playerColors[0]
                             }, function(err, game){
                                 if(err){
                                     /*res.status(404);
@@ -203,10 +254,13 @@ module.exports = function(app, io, User, config){
                                         userId: userId,
                                         username: userObj.username,
                                         gameOwner: gameCreated.gameOwner,
-                                        playerReady: game.playerReady
+                                        playerReady: game.playerReady,
+                                        playerColor: game.playerColor
                                     });
 
                                     socket.playerName = userObj.username;
+
+                                    socket.playerColor = game.playerColor;
 
                                     socket.game = games[gameNameId];
 
@@ -266,12 +320,13 @@ module.exports = function(app, io, User, config){
                             }
                             else {
                                 UsersGame.create({
-                                    gameId: games[game][0].usersInGameId,
+                                    gameId: game,
                                     playerId: userId,
                                     playerName: user.username,
                                     gameOwner: false,
-                                    playerReady: false
-                                }, function(err){
+                                    playerReady: false,
+                                    playerColor: playerColors[games[game][0].game.players.length]
+                                }, function(err, userInGame){
                                     if(!err){
                                         var userObj = user;
                                         games[game][0].gameCanStart = false;
@@ -279,10 +334,13 @@ module.exports = function(app, io, User, config){
                                             userId: userId,
                                             username: user.username,
                                             gameOwner: false,
-                                            playerReady: false
+                                            playerReady: false,
+                                            playerColor: userInGame.playerColor
                                         });
 
                                         socket.playerName = user.username;
+
+                                        socket.playerColor = userInGame.playerColor;
 
                                         socket.game = games[game][0];
 
@@ -409,12 +467,21 @@ module.exports = function(app, io, User, config){
         socket.on('sendChatMsg', function(msg) {
             chatMessages.push({
                 sender: socket.playerName,
-                text: msg.msg
+                text: msg.msg,
+                color: socket.playerColor
             });
             socket.broadcast.to(socket.game[0].gameId).emit("getAllChatMsg", chatMessages);
             socket.emit('getAllChatMsg', chatMessages);
         });
     }
+
+    gameObj.getPlayersInTheGame = function(socket, userId){
+      socket.on('getPlayersInTheGame', function(){
+          var players = socket.game[0].game.players;
+          socket.broadcast.to(socket.game[0].gameId).emit("getPlayersInTheGameResponse", { players: players } );
+          socket.emit('getPlayersInTheGameResponse', { players: players });
+      });
+    };
 
     app.post('/getAllGames', function(req, res){
         Game.find({  }, function(err, allGames){
@@ -425,7 +492,7 @@ module.exports = function(app, io, User, config){
                     status: false
                 });*/
             }
-            else {
+            else {89
                 var gameNames = [];
                 for(game in allGames){
                     gameNames[game] = {

@@ -90,6 +90,13 @@ h6 {
 .row-space {
   margin: 5px 0; }
 
+.game-table {
+  width: 640px;
+  float: left;
+  margin: 20px 0 0 0;
+  position: relative;
+  text-align: center; }
+
 .game-table .dice .die {
   background-image: url("../img/dice-white.png"); }
 
@@ -97,6 +104,12 @@ h6 {
   .game-table .dice .die {
     background-image: url("../img/dice-white@2x.png");
     background-size: 916px 50px; } }
+.game-table .dice {
+  position: absolute;
+  z-index: 1000;
+  left: 310px;
+  top: 226px; }
+
 .game-table .die {
   width: 50px;
   height: 50px;
@@ -105,7 +118,8 @@ h6 {
   background-position: 0 0;
   display: inline-block;
   margin: 0 5px;
-  cursor: pointer; }
+  cursor: pointer;
+  flaot: right; }
 
 .game-table .die.die2 {
   background-position: -50px 0; }
@@ -161,15 +175,19 @@ h6 {
 .game-table .die.disabled {
   opacity: 0.3; }
 
-.chat-box {
+.left-side {
   width: 200px;
+  float: left; }
+
+.chat-box {
+  width: 100%;
   height: 250px;
   float: left;
   background: #fff;
   -webkit-border-radius: 5px;
   -moz-border-radius: 5px;
   border-radius: 5px;
-  margin: 20px; }
+  margin: 20px 0 0 0; }
 
 .chat-history {
   width: 100%;
@@ -181,7 +199,10 @@ h6 {
   border-radius: 5px;
   border: 1px solid #ccc;
   overflow-y: auto;
-  padding: 5px; }
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.8);
+  font-family: Helvetica;
+  font-size: 0.85em; }
 
 .chat-history > span {
   width: 100%;
@@ -196,5 +217,279 @@ h6 {
 .chat-commands {
   width: 100%;
   float: left; }
+
+.players-map {
+  width: 100%;
+  float: left;
+  background: rgba(0, 0, 0, 0.7);
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
+  margin: 20px 0 0 0;
+  padding: 10px; }
+
+.players-map .yellow > span,
+.chat-history .yellow {
+  color: #fffc00; }
+
+.players-map .blue > span,
+.chat-history .blue {
+  color: #00b4ff; }
+
+.players-map .green > span,
+.chat-history .green {
+  color: #00b50d; }
+
+.players-map .red > span,
+.chat-history .red {
+  color: #ff3232; }
+
+.players-map span {
+  width: 100%;
+  float: left;
+  margin: 3px 0;
+  padding-left: 15px;
+  position: relative; }
+
+.players-map span:before {
+  content: "\2022";
+  float: left;
+  position: absolute;
+  left: 0; }
+
+.players-map span.me:after {
+  content: " < ";
+  margin-left: 10px; }
+
+.figure-map {
+  width: 435px;
+  position: relative;
+  display: inline-block;
+  margin: 0 auto; }
+
+.figure-map div[class^="f"] {
+  width: 30px;
+  height: 30px;
+  float: left;
+  background: #fff;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+.figure-map .f1 {
+  left: 262px;
+  top: 20px; }
+
+.figure-map .f2 {
+  left: 262px;
+  top: 60px; }
+
+.figure-map .f3 {
+  left: 262px;
+  top: 100px; }
+
+.figure-map .f4 {
+  left: 262px;
+  top: 140px; }
+
+.figure-map .f5 {
+  left: 262px;
+  top: 180px; }
+
+.figure-map .f6 {
+  left: 302px;
+  top: 180px; }
+
+.figure-map .f7 {
+  left: 342px;
+  top: 180px; }
+
+.figure-map .f8 {
+  left: 382px;
+  top: 180px; }
+
+.figure-map .f9 {
+  left: 422px;
+  top: 180px; }
+
+.figure-map .f10 {
+  left: 422px;
+  top: 220px; }
+
+.figure-map .f11 {
+  left: 422px;
+  top: 260px; }
+
+.figure-map .f12 {
+  left: 382px;
+  top: 260px; }
+
+.figure-map .f13 {
+  left: 342px;
+  top: 260px; }
+
+.figure-map .f14 {
+  left: 302px;
+  top: 260px; }
+
+.figure-map .f15 {
+  left: 262px;
+  top: 260px; }
+
+.figure-map .f16 {
+  left: 262px;
+  top: 300px; }
+
+.figure-map .f17 {
+  left: 262px;
+  top: 340px; }
+
+.figure-map .f18 {
+  left: 262px;
+  top: 380px; }
+
+.figure-map .f19 {
+  left: 262px;
+  top: 420px; }
+
+.figure-map .f20 {
+  left: 222px;
+  top: 420px; }
+
+.figure-map .f20 {
+  left: 222px;
+  top: 420px; }
+
+.figure-map .f21 {
+  left: 182px;
+  top: 420px; }
+
+.figure-map .f22 {
+  left: 182px;
+  top: 380px; }
+
+.figure-map .f23 {
+  left: 182px;
+  top: 340px; }
+
+.figure-map .f24 {
+  left: 182px;
+  top: 300px; }
+
+.figure-map .f25 {
+  left: 182px;
+  top: 260px; }
+
+.figure-map .f26 {
+  left: 142px;
+  top: 260px; }
+
+.figure-map .f27 {
+  left: 102px;
+  top: 260px; }
+
+.figure-map .f28 {
+  left: 62px;
+  top: 260px; }
+
+.figure-map .f29 {
+  left: 22px;
+  top: 260px; }
+
+.figure-map .f30 {
+  left: 22px;
+  top: 220px; }
+
+.figure-map .f31 {
+  left: 22px;
+  top: 180px; }
+
+.figure-map .f32 {
+  left: 62px;
+  top: 180px; }
+
+.figure-map .f33 {
+  left: 102px;
+  top: 180px; }
+
+.figure-map .f34 {
+  left: 142px;
+  top: 180px; }
+
+.figure-map .f35 {
+  left: 182px;
+  top: 180px; }
+
+.figure-map .f36 {
+  left: 182px;
+  top: 140px; }
+
+.figure-map .f37 {
+  left: 182px;
+  top: 100px; }
+
+.figure-map .f38 {
+  left: 182px;
+  top: 60px; }
+
+.figure-map .f39 {
+  left: 182px;
+  top: 20px; }
+
+.figure-map .f40 {
+  left: 222px;
+  top: 20px; }
+
+div[class^="house"] {
+  width: 71px;
+  height: 71px;
+  position: absolute; }
+
+div[class^="house"] div {
+  position: relative;
+  height: 71px; }
+
+div[class^="house"] div div[class^="hf"] {
+  width: 30px;
+  height: 30px;
+  float: left;
+  background: #fff;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+div[class^="house"] div div.hf1 {
+  top: 0;
+  left: 0; }
+
+div[class^="house"] div div.hf2 {
+  top: 0;
+  right: 0; }
+
+div[class^="house"] div div.hf3 {
+  bottom: 0;
+  right: 0; }
+
+div[class^="house"] div div.hf4 {
+  left: 0;
+  bottom: 0; }
+
+.house1 {
+  top: 20px;
+  right: -17px; }
+
+.house2 {
+  top: 364px;
+  right: -17px; }
+
+.house3 {
+  top: 364px;
+  left: 20px; }
+
+.house4 {
+  top: 20px;
+  left: 20px; }
 
 /*# sourceMappingURL=custom.css.map */

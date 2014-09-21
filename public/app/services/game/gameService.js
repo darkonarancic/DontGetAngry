@@ -148,6 +148,21 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
             });
 
             return deferred.promise;
+        },
+        getAllPlayers: function(){
+            var io = this.getSocket().getInstance();
+
+            io.emit('getPlayersInTheGame', { });
+        },
+        getAllPlayersRespond: function(){
+            var io = this.getSocket().getInstance(),
+                deferred = $q.defer();
+
+            io.on('getPlayersInTheGameResponse', function(data){
+                deferred.resolve(data);
+            });
+
+            return deferred.promise;
         }
     }
 }]);

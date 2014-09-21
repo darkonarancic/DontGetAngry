@@ -1,17 +1,101 @@
-div(class="chat-box")
-    div(class="col-xs-12")
-        div(class="chat-history", id="chat-history", readonly)
-            span(ng-repeat="msg in chat.messages")
-                strong {{ msg.sender + ': ' }}
-                span {{ msg.text }}
-    div(class="chat-commands")
-        div(class="col-lg-12")
-            div(class="input-group")
-                input(type="text" class="form-control" id="msg-input")
-                span(class="input-group-btn")
-                    button(class="btn btn-success", type="button", ng-click="sendChatMsg();") Send
+div(class="col-xs-12 main-menu")
+    div(class="navbar navbar-default")
+        div.navbar-header
+            a.navbar-brand.pull-left
+                h6.clear-top Don't Get Angry
+        form(class="navbar-form navbar-right", role="search")
+            div.col-xs-12
+                div(class="form-group")
+                    a Hello, {{ user.username }}&nbsp;&nbsp;&nbsp;
+                button(type="submit" class="btn btn-primary" ng-click="logOut();") Logout
+div(class="left-side")
+    div(class="chat-box")
+        div(class="col-xs-12")
+            div(class="chat-history", id="chat-history", readonly)
+                div(ng-repeat="msg in chat.messages")
+                    span(ng-class="msg.color")
+                        strong {{ msg.sender + ': ' }}
+                        span {{ msg.text }}
+        div(class="chat-commands")
+            div(class="col-lg-12")
+                div(class="input-group")
+                    input(type="text" class="form-control" id="msg-input")
+                    span(class="input-group-btn")
+                        button(class="btn btn-success", type="button", ng-click="sendChatMsg();") Send
+
+    div(class="players-map")
+        div(ng-repeat="player in game.players")
+            div(ng-class="player.playerColor")
+                span(class="dot me", ng-if="player.username === user.username") {{ player.username }}
+                span(class="dot", ng-if="player.username !== user.username") {{ player.username }}
 
 div(class="game-table")
     div(class="dice", ng-click="game.rollDice();")
         div(class="die", id="dice")
+    div(class="figure-map")
+        div.f1
+        div.f2
+        div.f3
+        div.f4
+        div.f5
+        div.f6
+        div.f7
+        div.f8
+        div.f9
+        div.f10
+        div.f11
+        div.f12
+        div.f13
+        div.f14
+        div.f15
+        div.f16
+        div.f17
+        div.f18
+        div.f19
+        div.f20
+        div.f21
+        div.f22
+        div.f23
+        div.f24
+        div.f25
+        div.f26
+        div.f27
+        div.f28
+        div.f29
+        div.f30
+        div.f31
+        div.f32
+        div.f33
+        div.f34
+        div.f35
+        div.f36
+        div.f37
+        div.f38
+        div.f39
+        div.f40
+
+        div.house1
+            div
+                div.hf1
+                div.hf2
+                div.hf3
+                div.hf4
+        div.house2
+            div
+                div.hf1
+                div.hf2
+                div.hf3
+                div.hf4
+        div.house3
+            div
+                div.hf1
+                div.hf2
+                div.hf3
+                div.hf4
+        div.house4
+            div
+                div.hf1
+                div.hf2
+                div.hf3
+                div.hf4
 

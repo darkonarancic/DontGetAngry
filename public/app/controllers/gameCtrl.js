@@ -1,5 +1,5 @@
 angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameService){
-
+    $scope.user = gameService.getSessionDetails();
     $scope.game = {
         diceClass: "",
         diceFinalNumber: "",
@@ -55,6 +55,20 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         );
     };
 
+    gameService.getAllPlayersRespond().then(
+        function(data){
+            if(data){
+                $scope.game.players = data.players;
+            }
+            else {
+                gameService.getAllPlayers();
+            }
+        },
+        function(status){
+
+        }
+    );
+
     $scope.sendChatMsg = function(){
         var msg = document.getElementById('msg-input').value;
         gameService.sendChatMsg(msg);
@@ -62,4 +76,5 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
 
     $scope.game.getDice();
     $scope.getChatMsg();
+    gameService.getAllPlayers();
 }]);
