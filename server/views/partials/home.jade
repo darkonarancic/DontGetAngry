@@ -17,7 +17,7 @@ div(class="col-xs-10 main-menu col-sm-push-1")
         div.panel-body
             div.col-xs-12
                 div.row(ng-repeat="game in gameObj.games")
-                    div.row-space.form-group(ng-if="game.gameName != user.username")
+                    div.row-space.form-group(ng-if="game.gameName !== user.username")
                         span {{ game.gameName }}
                         a(href="#", ng-click="joinExistingGame(this);" ng-attr-gameid="{{ game.gameId }}").pull-right.btn.btn-success Join
 

@@ -106,10 +106,10 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
 
             io.emit('canGameStart', { });
         },
-        rollDice: function(){
+        rollDice: function(arrayNumb){
             var io = this.getSocket().getInstance();
 
-            io.emit('rollDice', { });
+            io.emit('rollDice', { currentPlayer: arrayNumb });
         },
         getDiceNumber: function(){
             var io = this.getSocket().getInstance(),

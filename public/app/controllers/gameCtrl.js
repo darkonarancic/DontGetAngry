@@ -3,7 +3,9 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
     $scope.game = {
         diceClass: "",
         diceFinalNumber: "",
-        diceClickNumber: 0
+        diceClickNumber: 0,
+        playerTurn: "",
+        despicableMe: {}
     };
 
     $scope.chat = {};
@@ -11,7 +13,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
     $scope.game.rollDice = function(){
        if($scope.game.diceClickNumber === 0){
            $scope.game.diceClickNumber = 1;
-           gameService.rollDice();
+           $scope.game.despicableMe.canRoll = false;
+           gameService.rollDice($scope.game.despicableMe.currentlyPlaying);
        }
     };
 
@@ -59,6 +62,14 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         function(data){
             if(data){
                 $scope.game.players = data.players;
+                $scope.game.playerTurn = data.players[0].currentlyPlaying;
+
+                angular.forEach($scope.game.players, function(value, key) {
+                   if(value.username === $scope.user.username) {
+                        $scope.game.despicableMe = value;
+                   }
+                });
+
                 //$scope.sortFigures();
             }
             else {

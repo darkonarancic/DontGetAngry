@@ -30,14 +30,18 @@ module.exports = function(app, io, User, config){
         gameOwner: {type: Boolean, required: true},
         playerReady: {type: Boolean, required: true},
         playerColor: {type: String, required: true},
-        gameState: {
+        currentlyPlaying: { type: Number, required: true },
+        canRoll: {type: Boolean, required: true},
+        lastRolledNumber: { type: Number },
+        pendingStatus: {type: Boolean, required: true},
+
             myTurn: {type: Boolean, required: true},
             firstRoll: {type: Boolean, required: true},
             firstRollLeft: { type: Number, required: true },
             startPoint: { type: Number, required: true },
             endPoint: { type: Number, required: true },
             figures: [Number]
-        }
+
     });
 
 
@@ -104,13 +108,17 @@ module.exports = function(app, io, User, config){
                                             playerReady: players[player].playerReady,
                                             playerColor: players[player].playerColor,
                                             numbOfFigures: 4,
+                                            currentlyPlaying: players[player].currentlyPlaying,
+                                            canRoll: players[player].canRoll,
+                                            lastRolledNumber: players[player].lastRolledNumber,
+                                            pendingStatus: players[player].pendingStatus,
                                             gameState: {
-                                                myTurn: players[player].gameState.myTurn,
-                                                firstRoll: players[player].gameState.firstRoll,
-                                                firstRollLeft: players[player].gameState.firstRollLeft,
-                                                startPoint: players[player].gameState.startPoint,
-                                                endPoint: players[player].gameState.endPoint,
-                                                figures: players[player].gameState.figures
+                                                myTurn: players[player].myTurn,
+                                                firstRoll: players[player].firstRoll,
+                                                firstRollLeft: players[player].firstRollLeft,
+                                                startPoint: players[player].startPoint,
+                                                endPoint: players[player].endPoint,
+                                                figures: players[player].figures
                                             }
                                         });
                                     }
@@ -146,7 +154,7 @@ module.exports = function(app, io, User, config){
 
                                     if(!runOnlyOnce){
 
-                                        gameObj.getGame(socket, userId);
+                                       // gameObj.getGame(socket, userId);
 
                                         gameObj.getPlayersInTheGame(socket, userId);
 
@@ -177,7 +185,7 @@ module.exports = function(app, io, User, config){
             });
         }
         else {
-            gameObj.getGame(socket, userId);
+            //gameObj.getGame(socket, userId);
 
             gameObj.joinCurrentGame(socket, userId);
 
@@ -260,14 +268,18 @@ module.exports = function(app, io, User, config){
                                 gameOwner: true,
                                 playerReady: false,
                                 playerColor: playerColors[0],
-                                gameState: {
+                                currentlyPlaying: 0,
+                                canRoll: true,
+                                lastRolledNumber: 0,
+                                pendingStatus: false,
+
                                     myTurn: true,
                                     firstRoll: true,
                                     firstRollLeft: 3,
                                     startPoint: 0,
-                                    endPoint: 40,
+                                    endPoint: 39,
                                     figures: [0, 0, 0, 0]
-                                }
+
                             }, function(err, game){
                                 if(err){
                                     /*res.status(404);
@@ -286,7 +298,6 @@ module.exports = function(app, io, User, config){
                                         gameId: gameNameId,
                                         gameCanStart: gameCreated.gameCanStart,
                                         gameStarted: gameCreated.gameStarted,
-                                        currentlyPlaying: 0, //currently active player
                                         game: {}
                                     });
 
@@ -298,13 +309,17 @@ module.exports = function(app, io, User, config){
                                         playerReady: game.playerReady,
                                         playerColor: game.playerColor,
                                         numbOfFigures: 4,
+                                        currentlyPlaying: game.currentlyPlaying,
+                                        lastRolledNumber: game.lastRolledNumber,
+                                        pendingStatus: game.pendingStatus,
+                                        canRoll: game.canRoll,
                                         gameState: {
-                                            myTurn: game.gameState.myTurn,
-                                            firstRoll: game.gameState.firstRoll,
-                                            firstRollLeft: game.gameState.firstRollLeft,
-                                            startPoint: game.gameState.startPoint,
-                                            endPoint: game.gameState.endPoint,
-                                            figures: game.gameState.figures
+                                            myTurn: game.myTurn,
+                                            firstRoll: game.firstRoll,
+                                            firstRollLeft: game.firstRollLeft,
+                                            startPoint: game.startPoint,
+                                            endPoint: game.endPoint,
+                                            figures: game.figures
                                         }
                                     });
 
@@ -378,14 +393,16 @@ module.exports = function(app, io, User, config){
                                     gameOwner: false,
                                     playerReady: false,
                                     playerColor: playerColors[games[game][0].game.players.length],
-                                    gameState: {
+                                    currentlyPlaying: 0,
+                                    canRoll: false,
+                                    lastRolledNumber: 0,
+                                    pendingStatus: false,
                                         myTurn: false,
                                         firstRoll: true,
                                         firstRollLeft: 3,
                                         startPoint: (games[game][0].game.players.length * 10),
-                                        endPoint: (games[game][0].game.players.length * 10),
+                                        endPoint: (games[game][0].game.players.length * 10) - 1,
                                         figures: [0, 0, 0, 0]
-                                    }
                                 }, function(err, userInGame){
                                     if(!err){
                                         games[game][0].gameCanStart = false;
@@ -396,13 +413,17 @@ module.exports = function(app, io, User, config){
                                             playerReady: false,
                                             playerColor: userInGame.playerColor,
                                             numbOfFigures: 4,
+                                            currentlyPlaying: 0,
+                                            canRoll: userInGame.canRoll,
+                                            lastRolledNumber: userInGame.lastRolledNumber,
+                                            pendingStatus: userInGame.pendingStatus,
                                             gameState: {
-                                                myTurn: userInGame.gameState.myTurn,
-                                                firstRoll: userInGame.gameState.firstRoll,
-                                                firstRollLeft: userInGame.gameState.firstRollLeft,
-                                                startPoint: userInGame.gameState.startPoint,
-                                                endPoint: userInGame.gameState.endPoint,
-                                                figures: userInGame.gameState.figures
+                                                myTurn: userInGame.myTurn,
+                                                firstRoll: userInGame.firstRoll,
+                                                firstRollLeft: userInGame.firstRollLeft,
+                                                startPoint: userInGame.startPoint,
+                                                endPoint: userInGame.endPoint,
+                                                figures: userInGame.figures
                                             }
                                         });
 
@@ -517,18 +538,144 @@ module.exports = function(app, io, User, config){
     gameObj.canGameStart = function(socket, userId){
         socket.on('canGameStart', function() {
             if(socket.game[0].gameCanStart){
-                socket.broadcast.to(socket.game[0].gameId).emit("redirectToTheGame", { goToTable: true } );
-                socket.emit('redirectToTheGame', { goToTable: true });
+                Game.update({ gameOwnerId: socket.game[0].usersInGameId }, { gameStarted: true }, function(){
+                    socket.broadcast.to(socket.game[0].gameId).emit("redirectToTheGame", { goToTable: true } );
+                    socket.emit('redirectToTheGame', { goToTable: true });
+                });
             }
         })
     };
 
     gameObj.rollDice = function(socket, userId){
-        socket.on('rollDice', function() {
+        socket.on('rollDice', function(arrayNumb) {
             var randomNumber = Math.floor(Math.random()*6) + 1;
-            socket.broadcast.to(socket.game[0].gameId).emit("newDiceNumber", { diceNumber: randomNumber } );
-            socket.emit('newDiceNumber', { diceNumber: randomNumber });
+            var arrayNumb = arrayNumb.currentPlayer;
+
+
+            //check if is a first round roll
+            if(activeGame[0].game.players[arrayNumb].gameState.firstRoll){
+                //check if the number is "6" then set firstRoll to false
+                if(randomNumber === 6){
+                    //and update database
+                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {'$set':{ 'firstRoll': false , pendingStatus: true}}, { multi: true }, function (err, user) {
+                        activeGame[0].game.players[arrayNumb].gameState.firstRoll = false;
+
+                        gameObj.setPendingStatus(arrayNumb);
+
+                        gameObj.emitNewDiceNumber(socket, randomNumber);
+
+                    });
+                }
+                //if is a first round roll and if player doesn't get "6"
+                else {
+                    //if it is a last roll in a round
+                    if(activeGame[0].game.players[arrayNumb].gameState.firstRollLeft === 0){
+                        activeGame[0].game.players[arrayNumb].gameState.firstRollLeft = 3;
+
+                        gameObj.moveToNextPlayer(arrayNumb);
+
+                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3 }}, function (err, user) {
+                            if(!err){
+                                console.log("firstRollLeft property is set to 3 for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                                gameObj.emitNewDiceNumber(socket, randomNumber);
+                            }
+                        });
+                    }
+                    //if it is not last roll in a round
+                    else {
+                        var newSize = activeGame[0].game.players[arrayNumb].gameState.firstRollLeft -= 1;
+
+                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {'$set':{ 'firstRollLeft': newSize }}, function (err, user) {
+                            if(!err){
+                                console.log("firstRollLeft property is reduced for one for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                                gameObj.emitNewDiceNumber(socket, randomNumber);
+                            }
+                        });
+                    }
+                }
+            }
+            else {
+                if(randomNumber === 6){
+                    gameObj.setPendingStatus(arrayNumb);
+                    activeGame[0].game.players[arrayNumb].lastRolledNumber = randomNumber;
+
+                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, { lastRolledNumber: randomNumber, pendingStatus: true },{ multi: true }, function (err, user) {
+                        if(!err){
+                            console.log("firstRollLeft and pendingStatus properties is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                            gameObj.emitNewDiceNumber(socket, randomNumber);
+                        }
+                    });
+                }
+                else {
+                    gameObj.setPendingStatus(arrayNumb);
+
+                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {  pendingStatus: true }, function (err, user) {
+                        if(!err){
+                            console.log("pendingStatus property is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                            gameObj.emitNewDiceNumber(socket, randomNumber);
+                        }
+                    });
+                }
+            }
+
+            UsersGame.find({ playerId: activeGame[0].game.players[arrayNumb].userId }, function(err, user){
+                console.log(user);
+            });
+
         });
+    };
+
+    gameObj.emitNewDiceNumber = function(socket, randomNumber){
+        socket.game = activeGame[0].game;
+
+        socket.broadcast.to(activeGame[0].gameId).emit("newDiceNumber", { diceNumber: randomNumber } );
+        socket.emit('newDiceNumber', { diceNumber: randomNumber });
+    }
+
+    //after player finished a round move to a next one
+    gameObj.moveToNextPlayer = function(current){
+        var size = activeGame[0].game.players.length; //check the size of the players list
+        activeGame[0].game.players[current].gameState.myTurn = false; //current user set to false
+
+        var nextUser = null;
+
+        for(var player in activeGame[0].game.players){
+            if(player === size){ //if is a last player in the list
+                activeGame[0].game.players[0].gameState.myTurn = true;
+                nextUser = 0;
+            }
+            else {
+                activeGame[0].game.players[player].gameState.myTurn = true;
+                nextUser = player;
+            }
+        }
+
+        UsersGame.update({ playerId: activeGame[0].game.players[current].userId }, {'$set':{ 'myTurn': false  }}, function (err, user) {
+            if(!err){
+                console.log("myTurn property is set to false for the user: " + activeGame[0].game.players[current].username);
+
+                UsersGame.update({ playerId: activeGame[0].game.players[nextUser].userId }, {'$set':{ 'myTurn': true  }}, function (err, user) {
+                    if(!err){
+                        console.log("myTurn property is set to true for the user: " + activeGame[0].game.players[nextUser].username);
+                    }
+                });
+            }
+        });
+
+    };
+
+    //set pending status
+    gameObj.setPendingStatus = function(current){
+        activeGame[0].game.players[current].pendingStatus = true;
+    };
+
+    //remove pending status
+    gameObj.removePendingStatus = function(current){
+        activeGame[0].game.players[current].pendingStatus = false;
     };
 
     gameObj.sendChatMsg = function(socket, userId){
@@ -551,9 +698,9 @@ module.exports = function(app, io, User, config){
       });
     };
 
-    gameObj.getGame = function(socket, userId){
+    gameObj.gameStarted = function(socket, userId){
         socket.on('getGame', function(){
-            var gameResponse = socket.game[0];
+            var gameResponse = activeGame[0];
             socket.broadcast.to(socket.game[0].gameId).emit("getGameRespond", gameResponse );
             socket.emit('getGameRespond', gameResponse );
         });
