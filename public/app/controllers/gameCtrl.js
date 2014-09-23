@@ -59,10 +59,21 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         function(data){
             if(data){
                 $scope.game.players = data.players;
+                //$scope.sortFigures();
             }
             else {
                 gameService.getAllPlayers();
             }
+        },
+        function(status){
+
+        }
+    );
+
+    gameService.getGameRespond().then(
+        function(data){
+            $scope.game.gameObj = data[0];
+            gameService.getGameRespond();
         },
         function(status){
 
@@ -74,7 +85,27 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         gameService.sendChatMsg(msg);
     };
 
+    $scope.sortFigures = function(){
+        var size = $scope.game.players.length;
+        var colors = ["yellow", "blue", "green", "red"];
+
+        for(var i = 0; i < size; i++){
+
+            var element = $('#house'+ ( i + 1));
+
+            for(var y = 0; y < 4; y++){
+                var figure = $('#f' + (y+1) +'-' + colors[i]);
+
+                $(figure).css({
+                    top: $('#hf'+(y+1), element).position().top + $(element).position().top - 15,
+                    left: $('#hf'+(y+1), element).position().left + $(element).position().left
+                });
+            }
+        }
+    };
+
     $scope.game.getDice();
     $scope.getChatMsg();
     gameService.getAllPlayers();
+    gameService.getGame();
 }]);

@@ -8,7 +8,7 @@ div(class="col-xs-12 main-menu")
                 div(class="form-group")
                     a Hello, {{ user.username }}&nbsp;&nbsp;&nbsp;
                 button(type="submit" class="btn btn-primary" ng-click="logOut();") Logout
-div(class="col-xs-12")
+div(class="col-xs-12", )
     div(class="left-side")
         div(class="chat-box")
             div(class="col-xs-12")
@@ -31,11 +31,11 @@ div(class="col-xs-12")
                     span(class="dot", ng-if="player.username !== user.username") {{ player.username }}
 
     div(class="game-table")
-        div(ng-repeat="player in game.players")
-            div(ng-class="'figure f1 ' + player.playerColor")
-            div(ng-class="'figure f2 ' + player.playerColor")
-            div(ng-class="'figure f3 ' + player.playerColor")
-            div(ng-class="'figure f4 ' + player.playerColor")
+        div(ng-repeat="player in game.players", ng-class="'box' + player.playerColor", ng-attr-id="{{ 'f-box' + ($index + 1) }}", on-finish-render="sortFigures()")
+            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}")
+            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}")
+            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}")
+            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}")
 
         div(class="dice", ng-click="game.rollDice();")
             div(class="die", id="dice")
@@ -81,28 +81,28 @@ div(class="col-xs-12")
             div.f39
             div.f40
 
-            div.house1
+            div.house1#house1
                 div
-                    div.hf1
-                    div.hf2
-                    div.hf3
-                    div.hf4
-            div.house2
+                    div.hf1#hf1
+                    div.hf2#hf2
+                    div.hf3#hf3
+                    div.hf4#hf4
+            div.house2#house2
                 div
-                    div.hf1
-                    div.hf2
-                    div.hf3
-                    div.hf4
-            div.house3
+                    div.hf1#hf1
+                    div.hf2#hf2
+                    div.hf3#hf3
+                    div.hf4#hf4
+            div.house3#house3
                 div
-                    div.hf1
-                    div.hf2
-                    div.hf3
-                    div.hf4
-            div.house4
+                    div.hf1#hf1
+                    div.hf2#hf2
+                    div.hf3#hf3
+                    div.hf4#hf4
+            div.house4#house4
                 div
-                    div.hf1
-                    div.hf2
-                    div.hf3
-                    div.hf4
+                    div.hf1#hf1
+                    div.hf2#hf2
+                    div.hf3#hf3
+                    div.hf4#hf4
 

@@ -10,6 +10,7 @@ module.exports = function(app, io, User, config){
     var gameRooms = [];
     var chatMessages = []; //chat messages between game group
     var playerColors = ["yellow", "blue", "green", "red"];
+    var activeGame = {};
 
     //game schemea for main game
     var gameSchema = mongoose.Schema({
@@ -17,7 +18,8 @@ module.exports = function(app, io, User, config){
         gameOwnerId: {type: String, required: true, unique: true},
         gameOwnerName: {type: String, required: true},
         gameOwner: {type: String, required: true},
-        gameCanStart: {type: Boolean, required: true}
+        gameCanStart: {type: Boolean, required: true},
+        gameStarted: {type: Boolean, required: true}
     });
 
     //user schema for every user joined the game
@@ -27,7 +29,15 @@ module.exports = function(app, io, User, config){
         playerName: {type: String, required: true},
         gameOwner: {type: Boolean, required: true},
         playerReady: {type: Boolean, required: true},
-        playerColor: {type: String, required: true}
+        playerColor: {type: String, required: true},
+        gameState: {
+            myTurn: {type: Boolean, required: true},
+            firstRoll: {type: Boolean, required: true},
+            firstRollLeft: { type: Number, required: true },
+            startPoint: { type: Number, required: true },
+            endPoint: { type: Number, required: true },
+            figures: [Number]
+        }
     });
 
 
@@ -73,6 +83,7 @@ module.exports = function(app, io, User, config){
                                         usersInGameId: gameRow.gameOwnerId,
                                         gameId: _gameId,
                                         gameCanStart: gameRow.gameCanStart,
+                                        gameStarted: gameRow.gameStarted,
                                         game: {}
                                     });
 
@@ -92,11 +103,21 @@ module.exports = function(app, io, User, config){
                                             gameOwner: gameRow.gameOwner,
                                             playerReady: players[player].playerReady,
                                             playerColor: players[player].playerColor,
-                                            numbOfFigures: 4
+                                            numbOfFigures: 4,
+                                            gameState: {
+                                                myTurn: players[player].gameState.myTurn,
+                                                firstRoll: players[player].gameState.firstRoll,
+                                                firstRollLeft: players[player].gameState.firstRollLeft,
+                                                startPoint: players[player].gameState.startPoint,
+                                                endPoint: players[player].gameState.endPoint,
+                                                figures: players[player].gameState.figures
+                                            }
                                         });
                                     }
 
                                     socket.game = games[_gameId];
+
+                                    activeGame = games[_gameId];
 
                                     if(self) {
                                         socket.playerName = self;
@@ -120,7 +141,12 @@ module.exports = function(app, io, User, config){
                                     socket.broadcast.to(game).emit("getPlayersInTheGameResponse", { players: games[_gameId][0].game.players } );
                                     socket.emit('getPlayersInTheGameResponse', { players: games[_gameId][0].game.players });
 
+                                    socket.broadcast.to(game).emit("getGameRespond", games[_gameId] );
+                                    socket.emit('getGameRespond', games[_gameId] );
+
                                     if(!runOnlyOnce){
+
+                                        gameObj.getGame(socket, userId);
 
                                         gameObj.getPlayersInTheGame(socket, userId);
 
@@ -151,6 +177,8 @@ module.exports = function(app, io, User, config){
             });
         }
         else {
+            gameObj.getGame(socket, userId);
+
             gameObj.joinCurrentGame(socket, userId);
 
             gameObj.createGame(socket, userId);
@@ -187,6 +215,7 @@ module.exports = function(app, io, User, config){
                 }
                 else {
                     userObj = user;
+
                 }
             });
             Game.count({ gameOwnerId: userId }, function(err, count){
@@ -210,7 +239,8 @@ module.exports = function(app, io, User, config){
                         gameOwnerId: userId,
                         gameOwnerName: userObj.username,
                         gameOwner: true,
-                        gameCanStart: false
+                        gameCanStart: false,
+                        gameStarted: false
                     }, function(err, game){
                         var gameId = userObj.username + userId;
                         var gameCreated = game; // when game is created this object will be returned
@@ -229,7 +259,15 @@ module.exports = function(app, io, User, config){
                                 playerName: userObj.username,
                                 gameOwner: true,
                                 playerReady: false,
-                                playerColor: playerColors[0]
+                                playerColor: playerColors[0],
+                                gameState: {
+                                    myTurn: true,
+                                    firstRoll: true,
+                                    firstRollLeft: 3,
+                                    startPoint: 0,
+                                    endPoint: 40,
+                                    figures: [0, 0, 0, 0]
+                                }
                             }, function(err, game){
                                 if(err){
                                     /*res.status(404);
@@ -247,6 +285,8 @@ module.exports = function(app, io, User, config){
                                         usersInGameId: gameCreated.gameOwnerId,
                                         gameId: gameNameId,
                                         gameCanStart: gameCreated.gameCanStart,
+                                        gameStarted: gameCreated.gameStarted,
+                                        currentlyPlaying: 0, //currently active player
                                         game: {}
                                     });
 
@@ -257,7 +297,15 @@ module.exports = function(app, io, User, config){
                                         gameOwner: gameCreated.gameOwner,
                                         playerReady: game.playerReady,
                                         playerColor: game.playerColor,
-                                        numbOfFigures: 4
+                                        numbOfFigures: 4,
+                                        gameState: {
+                                            myTurn: game.gameState.myTurn,
+                                            firstRoll: game.gameState.firstRoll,
+                                            firstRollLeft: game.gameState.firstRollLeft,
+                                            startPoint: game.gameState.startPoint,
+                                            endPoint: game.gameState.endPoint,
+                                            figures: game.gameState.figures
+                                        }
                                     });
 
                                     socket.playerName = userObj.username;
@@ -265,6 +313,8 @@ module.exports = function(app, io, User, config){
                                     socket.playerColor = game.playerColor;
 
                                     socket.game = games[gameNameId];
+
+                                    activeGame = games[gameNameId];
 
                                     socket.emit('createdGameResponse', games[gameNameId][0]);
 
@@ -327,10 +377,17 @@ module.exports = function(app, io, User, config){
                                     playerName: user.username,
                                     gameOwner: false,
                                     playerReady: false,
-                                    playerColor: playerColors[games[game][0].game.players.length]
+                                    playerColor: playerColors[games[game][0].game.players.length],
+                                    gameState: {
+                                        myTurn: false,
+                                        firstRoll: true,
+                                        firstRollLeft: 3,
+                                        startPoint: (games[game][0].game.players.length * 10),
+                                        endPoint: (games[game][0].game.players.length * 10),
+                                        figures: [0, 0, 0, 0]
+                                    }
                                 }, function(err, userInGame){
                                     if(!err){
-                                        var userObj = user;
                                         games[game][0].gameCanStart = false;
                                         games[game][0].game.players.push({
                                             userId: userId,
@@ -338,7 +395,15 @@ module.exports = function(app, io, User, config){
                                             gameOwner: false,
                                             playerReady: false,
                                             playerColor: userInGame.playerColor,
-                                            numbOfFigures: 4
+                                            numbOfFigures: 4,
+                                            gameState: {
+                                                myTurn: userInGame.gameState.myTurn,
+                                                firstRoll: userInGame.gameState.firstRoll,
+                                                firstRollLeft: userInGame.gameState.firstRollLeft,
+                                                startPoint: userInGame.gameState.startPoint,
+                                                endPoint: userInGame.gameState.endPoint,
+                                                figures: userInGame.gameState.figures
+                                            }
                                         });
 
                                         socket.playerName = user.username;
@@ -484,6 +549,14 @@ module.exports = function(app, io, User, config){
           socket.broadcast.to(socket.game[0].gameId).emit("getPlayersInTheGameResponse", { players: players } );
           socket.emit('getPlayersInTheGameResponse', { players: players });
       });
+    };
+
+    gameObj.getGame = function(socket, userId){
+        socket.on('getGame', function(){
+            var gameResponse = socket.game[0];
+            socket.broadcast.to(socket.game[0].gameId).emit("getGameRespond", gameResponse );
+            socket.emit('getGameRespond', gameResponse );
+        });
     };
 
     app.post('/getAllGames', function(req, res){

@@ -104,8 +104,8 @@ p {
 .game-table .dice {
   position: absolute;
   z-index: 1000;
-  left: 310px;
-  top: 226px;
+  left: 210px;
+  top: 215px;
 }
 
 .game-table .die{
@@ -288,7 +288,7 @@ p {
 .figure-map {
   width: 435px;
   position: relative;
-  display: inline-block;
+  float: left;
   margin: 0 auto;
 }
   .figure-map div[class^="f"]{
