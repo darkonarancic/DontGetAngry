@@ -5,11 +5,11 @@ module.exports = {
     development: {
         rootPath: rootPath,
         db: 'mongodb://dn_87:darko87_mongo@kahana.mongohq.com:10099/dn_code',
-        port: process.env.port || 3000
+        port: process.env.PORT || 3000
     },
     production: {
         rootPath: rootPath,
         db: 'mongodb://dn_87:darko87_mongo@kahana.mongohq.com:10099/dn_code',
-        port: process.env.port || 80
+        port: process.env.PORT || 80
     }
 };
