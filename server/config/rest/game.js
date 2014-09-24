@@ -172,6 +172,8 @@ module.exports = function(app, io, User, config){
 
                                         gameObj.sendChatMsg(socket, userId);
 
+                                        gameObj.movePlayer(socket, userId);
+
 
                                         runOnlyOnce = 1;
                                     }
@@ -202,6 +204,8 @@ module.exports = function(app, io, User, config){
             gameObj.sendChatMsg(socket, userId);
 
             gameObj.getPlayersInTheGame(socket, userId);
+
+            gameObj.movePlayer(socket, userId);
 
             //socket.emit('getPlayersInTheGame', {});
         }
@@ -276,7 +280,7 @@ module.exports = function(app, io, User, config){
                                     myTurn: true,
                                     firstRoll: true,
                                     firstRollLeft: 3,
-                                    startPoint: 0,
+                                    startPoint: 1,
                                     endPoint: 39,
                                     figures: [0, 0, 0, 0]
 
@@ -400,7 +404,7 @@ module.exports = function(app, io, User, config){
                                         myTurn: false,
                                         firstRoll: true,
                                         firstRollLeft: 3,
-                                        startPoint: (games[game][0].game.players.length * 10),
+                                        startPoint: (games[game][0].game.players.length * 10) + 1,
                                         endPoint: (games[game][0].game.players.length * 10) - 1,
                                         figures: [0, 0, 0, 0]
                                 }, function(err, userInGame){
@@ -548,7 +552,7 @@ module.exports = function(app, io, User, config){
 
     gameObj.rollDice = function(socket, userId){
         socket.on('rollDice', function(arrayNumb) {
-            var randomNumber = Math.floor(Math.random()*6) + 1;
+            var randomNumber = activeGame[0].game.diceNumber = Math.floor(Math.random()*6) + 1;
             var arrayNumb = arrayNumb.currentPlayer;
 
 
@@ -573,14 +577,13 @@ module.exports = function(app, io, User, config){
                     //if it is a last roll in a round
                     if(activeGame[0].game.players[arrayNumb].gameState.firstRollLeft === 1){
                         activeGame[0].game.players[arrayNumb].gameState.firstRollLeft = 3;
-                        activeGame[0].game.players[arrayNumb].gameState.canRoll = false;
+                        activeGame[0].game.players[arrayNumb].canRoll = false;
                         activeGame[0].game.players[arrayNumb].gameState.myTurn = false;
 
                         UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3, 'canRoll': false, 'myTurn': false }}, { multi: true }, function (err, user) {
                             if(!err){
                                 console.log("firstRollLeft property is set to 3 for the user: " + activeGame[0].game.players[arrayNumb].username);
-                                gameObj.moveToNextPlayer(arrayNumb);
-                                gameObj.emitNewDiceNumber(socket, randomNumber);
+                                gameObj.moveToNextPlayer(arrayNumb, socket);
                             }
                         });
                     }
@@ -640,9 +643,10 @@ module.exports = function(app, io, User, config){
     }
 
     //after player finished a round move to a next one
-    gameObj.moveToNextPlayer = function(current){
+    gameObj.moveToNextPlayer = function(current, socket){
         var size = activeGame[0].game.players.length; //check the size of the players list
         activeGame[0].game.players[current].gameState.myTurn = false; //current user set to false
+        activeGame[0].game.players[current].canRoll = false;
 
         var nextUser = null;
 
@@ -658,10 +662,11 @@ module.exports = function(app, io, User, config){
         for(var player in activeGame[0].game.players){
             if(player == nextUser){
                 activeGame[0].game.players[player].gameState.myTurn = true;
-                activeGame[0].game.players[player].gameState.myTurn.canRoll = true;
+                activeGame[0].game.players[player].canRoll = true;
             }
             else {
                 activeGame[0].game.players[player].gameState.myTurn = false;
+                activeGame[0].game.players[player].canRoll = false;
             }
             activeGame[0].game.players[player].currentlyPlaying = nextUser;
         }
@@ -669,13 +674,14 @@ module.exports = function(app, io, User, config){
 
 
 
-        UsersGame.update({ playerId: activeGame[0].game.players[current].userId }, {'$set':{ 'myTurn': false  }}, function (err, user) {
+        UsersGame.update({ playerId: activeGame[0].game.players[current].userId }, {'$set':{ 'myTurn': false, 'canRoll': false, 'currentlyPlaying': nextUser }},{ multi: true }, function (err, user) {
             if(!err){
                 console.log("myTurn property is set to false for the user: " + activeGame[0].game.players[current].username);
 
-                UsersGame.update({ playerId: activeGame[0].game.players[nextUser].userId }, {'$set':{ 'myTurn': true, 'canRoll': true  }},{ multi: true }, function (err, user) {
+                UsersGame.update({ playerId: activeGame[0].game.players[nextUser].userId }, {'$set':{ 'myTurn': true, 'canRoll': true, 'currentlyPlaying': nextUser  }},{ multi: true }, function (err, user) {
                     if(!err){
                         console.log("myTurn property is set to true for the user: " + activeGame[0].game.players[nextUser].username);
+
                     }
                 });
             }
@@ -721,6 +727,27 @@ module.exports = function(app, io, User, config){
         });
     };
 
+    gameObj.movePlayer = function(socket, userId){
+        socket.on('movePlayer', function(player){
+            activeGame[0].game.players[player.currentlyPlaying].gameState.figures = player.gameState.figures;
+            activeGame[0].game.players[player.currentlyPlaying].pendingStatus = false;
+            UsersGame.update({ playerId: activeGame[0].game.players[player.currentlyPlaying].userId }, { 'figures': player.gameState.figures, 'pendingStatus': false  },{ multi: true }, function (err, user) {
+               if(!err){
+                   if(activeGame[0].game.diceNumber < 6) {
+                       gameObj.moveToNextPlayer(player.currentlyPlaying, socket);
+                       socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
+                       socket.emit('mainGameListener', activeGame[0]);
+                   }
+                   else {
+                       socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
+                       socket.emit('mainGameListener', activeGame[0]);
+                   }
+
+               }
+            });
+        });
+    };
+
     app.post('/getAllGames', function(req, res){
         Game.find({  }, function(err, allGames){
             if(err){
@@ -730,7 +757,7 @@ module.exports = function(app, io, User, config){
                     status: false
                 });*/
             }
-            else {89
+            else {
                 var gameNames = [];
                 for(game in allGames){
                     gameNames[game] = {

@@ -188,6 +188,11 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
             });
 
             return deferred.promise;
+        },
+        movePlayer: function(player){
+            var io = this.getSocket().getInstance();
+
+            io.emit('movePlayer', player);
         }
     }
 }]);

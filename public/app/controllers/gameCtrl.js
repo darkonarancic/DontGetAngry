@@ -29,6 +29,7 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
                 var dice = document.getElementById('dice');
 
                 var interval = setInterval(function(){
+                    dice = document.getElementById('dice');
                     if(i > 18){
                         clearInterval(interval);
                         dice.setAttribute("class", "die die" + randomNumber);
@@ -120,6 +121,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         gameService.mainGameListenerRespond().then(
             function(data){
 
+                console.log(data);
+
                 $scope.game.gameObj = data;
 
                 $scope.game.players = data.game.players;
@@ -138,15 +141,22 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         );
     };
 
-    $scope.moveFigure = function(){
-        var self = this;
+    $scope.moveFigure = function(figure){
+        var self = $('#'+figure);
+        var index = parseInt($(self).attr('findex'));
+        var current =  $scope.game.despicableMe.gameState.figures[index];
 
+        if(current === 0){
+            $scope.game.despicableMe.gameState.figures[index] = $scope.game.despicableMe.gameState.startPoint;
+        }
+        else {
+            $scope.game.despicableMe.gameState.figures[index] = current + parseInt($scope.game.diceFinalNumber);
+        }
 
-
-        $scope.game.myFigures.push(this);
+        gameService.movePlayer($scope.game.despicableMe);
     };
 
-    $scope.mainGameListenter();
+    $scope.mainGameListener();
     $scope.game.getDice();
     $scope.getChatMsg();
     gameService.getAllPlayers();
