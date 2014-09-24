@@ -571,10 +571,11 @@ module.exports = function(app, io, User, config){
                     //if it is a last roll in a round
                     if(activeGame[0].game.players[arrayNumb].gameState.firstRollLeft === 0){
                         activeGame[0].game.players[arrayNumb].gameState.firstRollLeft = 3;
+                        activeGame[0].game.players[arrayNumb].gameState.canRoll = false;
 
                         gameObj.moveToNextPlayer(arrayNumb);
 
-                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3 }}, function (err, user) {
+                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3, 'canRoll': false }}, { multi: true }, function (err, user) {
                             if(!err){
                                 console.log("firstRollLeft property is set to 3 for the user: " + activeGame[0].game.players[arrayNumb].username);
 
@@ -622,15 +623,16 @@ module.exports = function(app, io, User, config){
                 }
             }
 
-            UsersGame.find({ playerId: activeGame[0].game.players[arrayNumb].userId }, function(err, user){
-                console.log(user);
-            });
 
         });
     };
 
     gameObj.emitNewDiceNumber = function(socket, randomNumber){
-        socket.game = activeGame[0].game;
+        socket.game = activeGame[0];
+
+
+        socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
+        socket.emit('mainGameListener', activeGame[0]);
 
         socket.broadcast.to(activeGame[0].gameId).emit("newDiceNumber", { diceNumber: randomNumber } );
         socket.emit('newDiceNumber', { diceNumber: randomNumber });
@@ -643,16 +645,27 @@ module.exports = function(app, io, User, config){
 
         var nextUser = null;
 
+
+        if(current === (size - 1)){
+            nextUser = 0;
+        }
+        else {
+            nextUser = current + 1;
+        }
+
+
         for(var player in activeGame[0].game.players){
-            if(player === size){ //if is a last player in the list
-                activeGame[0].game.players[0].gameState.myTurn = true;
-                nextUser = 0;
+            if(player == nextUser){
+                activeGame[0].game.players[player].gameState.myTurn = true;
             }
             else {
-                activeGame[0].game.players[player].gameState.myTurn = true;
-                nextUser = player;
+                activeGame[0].game.players[player].gameState.myTurn = false;
             }
+            activeGame[0].game.players[player].currentlyPlaying = nextUser;
         }
+
+
+
 
         UsersGame.update({ playerId: activeGame[0].game.players[current].userId }, {'$set':{ 'myTurn': false  }}, function (err, user) {
             if(!err){

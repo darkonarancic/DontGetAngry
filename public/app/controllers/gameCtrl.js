@@ -115,6 +115,29 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         }
     };
 
+    $scope.mainGameListenter = function(){
+        gameService.mainGameListeterRespond().then(
+            function(data){
+
+                $scope.game.gameObj = data;
+
+                $scope.game.players = data.game.players;
+                $scope.game.playerTurn = data.game.players[0].currentlyPlaying;
+
+                angular.forEach($scope.game.players, function(value, key) {
+                    if(value.username === $scope.user.username) {
+                        $scope.game.despicableMe = value;
+                    }
+                });
+
+                $scope.mainGameListenter();
+            },
+            function(){
+            }
+        );
+    };
+
+    $scope.mainGameListenter();
     $scope.game.getDice();
     $scope.getChatMsg();
     gameService.getAllPlayers();
