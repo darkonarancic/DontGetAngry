@@ -179,7 +179,7 @@ angryApp.service('gameService', ['usersService', '$q', '$http', function(usersSe
 
             return deferred.promise;
         },
-        mainGameListeterRespond: function(){
+        mainGameListenerRespond: function(){
             var io = this.getSocket().getInstance(),
                 deferred = $q.defer();
 

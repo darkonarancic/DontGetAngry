@@ -557,8 +557,10 @@ module.exports = function(app, io, User, config){
                 //check if the number is "6" then set firstRoll to false
                 if(randomNumber === 6){
                     //and update database
-                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {'$set':{ 'firstRoll': false , pendingStatus: true}}, { multi: true }, function (err, user) {
+                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {'$set':{ 'firstRoll': false , pendingStatus: true, lastRolledNumber: randomNumber}}, { multi: true }, function (err, user) {
                         activeGame[0].game.players[arrayNumb].gameState.firstRoll = false;
+                        activeGame[0].game.players[arrayNumb].gameState.pendingStatus = true;
+                        activeGame[0].game.players[arrayNumb].lastRolledNumber = randomNumber;
 
                         gameObj.setPendingStatus(arrayNumb);
 
@@ -569,16 +571,15 @@ module.exports = function(app, io, User, config){
                 //if is a first round roll and if player doesn't get "6"
                 else {
                     //if it is a last roll in a round
-                    if(activeGame[0].game.players[arrayNumb].gameState.firstRollLeft === 0){
+                    if(activeGame[0].game.players[arrayNumb].gameState.firstRollLeft === 1){
                         activeGame[0].game.players[arrayNumb].gameState.firstRollLeft = 3;
                         activeGame[0].game.players[arrayNumb].gameState.canRoll = false;
+                        activeGame[0].game.players[arrayNumb].gameState.myTurn = false;
 
-                        gameObj.moveToNextPlayer(arrayNumb);
-
-                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3, 'canRoll': false }}, { multi: true }, function (err, user) {
+                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId },{'$set':{ 'firstRollLeft': 3, 'canRoll': false, 'myTurn': false }}, { multi: true }, function (err, user) {
                             if(!err){
                                 console.log("firstRollLeft property is set to 3 for the user: " + activeGame[0].game.players[arrayNumb].username);
-
+                                gameObj.moveToNextPlayer(arrayNumb);
                                 gameObj.emitNewDiceNumber(socket, randomNumber);
                             }
                         });
@@ -657,6 +658,7 @@ module.exports = function(app, io, User, config){
         for(var player in activeGame[0].game.players){
             if(player == nextUser){
                 activeGame[0].game.players[player].gameState.myTurn = true;
+                activeGame[0].game.players[player].gameState.myTurn.canRoll = true;
             }
             else {
                 activeGame[0].game.players[player].gameState.myTurn = false;
@@ -671,7 +673,7 @@ module.exports = function(app, io, User, config){
             if(!err){
                 console.log("myTurn property is set to false for the user: " + activeGame[0].game.players[current].username);
 
-                UsersGame.update({ playerId: activeGame[0].game.players[nextUser].userId }, {'$set':{ 'myTurn': true  }}, function (err, user) {
+                UsersGame.update({ playerId: activeGame[0].game.players[nextUser].userId }, {'$set':{ 'myTurn': true, 'canRoll': true  }},{ multi: true }, function (err, user) {
                     if(!err){
                         console.log("myTurn property is set to true for the user: " + activeGame[0].game.players[nextUser].username);
                     }

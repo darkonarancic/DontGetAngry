@@ -5,7 +5,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         diceFinalNumber: "",
         diceClickNumber: 0,
         playerTurn: "",
-        despicableMe: {}
+        despicableMe: {},
+        myFigures: []
     };
 
     $scope.chat = {};
@@ -115,8 +116,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         }
     };
 
-    $scope.mainGameListenter = function(){
-        gameService.mainGameListeterRespond().then(
+    $scope.mainGameListener = function(){
+        gameService.mainGameListenerRespond().then(
             function(data){
 
                 $scope.game.gameObj = data;
@@ -130,11 +131,19 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
                     }
                 });
 
-                $scope.mainGameListenter();
+                $scope.mainGameListener();
             },
             function(){
             }
         );
+    };
+
+    $scope.moveFigure = function(){
+        var self = this;
+
+
+
+        $scope.game.myFigures.push(this);
     };
 
     $scope.mainGameListenter();
