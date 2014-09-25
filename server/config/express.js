@@ -14,10 +14,10 @@ module.exports = function(app, config){
 
     console.log(path.join(config.rootPath, '/public'));
 
-    app.use(compass({
+    /*app.use(compass({
         project: path.join(config.rootPath, '/public'),
         cache: false
-    }));
+    }));*/
 
     app.use(express.static( publicDir ));
 
