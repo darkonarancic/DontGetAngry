@@ -12,6 +12,8 @@ module.exports = function(app, io, User, config){
     var playerColors = ["yellow", "blue", "green", "red"];
     var activeGame = {};
 
+    var gameFields = [40];
+
     //game schemea for main game
     var gameSchema = mongoose.Schema({
         gameStatus: {type: String, required: true},
@@ -584,6 +586,7 @@ module.exports = function(app, io, User, config){
                             if(!err){
                                 console.log("firstRollLeft property is set to 3 for the user: " + activeGame[0].game.players[arrayNumb].username);
                                 gameObj.moveToNextPlayer(arrayNumb, socket);
+                                gameObj.emitNewDiceNumber(socket, randomNumber);
                             }
                         });
                     }
@@ -632,8 +635,7 @@ module.exports = function(app, io, User, config){
     };
 
     gameObj.emitNewDiceNumber = function(socket, randomNumber){
-        socket.game = activeGame[0];
-
+        socket.game[0] = activeGame[0];
 
         socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
         socket.emit('mainGameListener', activeGame[0]);
@@ -730,20 +732,21 @@ module.exports = function(app, io, User, config){
     gameObj.movePlayer = function(socket, userId){
         socket.on('movePlayer', function(player){
             activeGame[0].game.players[player.currentlyPlaying].gameState.figures = player.gameState.figures;
-            activeGame[0].game.players[player.currentlyPlaying].pendingStatus = false;
-            UsersGame.update({ playerId: activeGame[0].game.players[player.currentlyPlaying].userId }, { 'figures': player.gameState.figures, 'pendingStatus': false  },{ multi: true }, function (err, user) {
-               if(!err){
-                   if(activeGame[0].game.diceNumber < 6) {
-                       gameObj.moveToNextPlayer(player.currentlyPlaying, socket);
-                       socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
-                       socket.emit('mainGameListener', activeGame[0]);
-                   }
-                   else {
-                       socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
-                       socket.emit('mainGameListener', activeGame[0]);
-                   }
 
-               }
+            activeGame[0].game.players[player.currentlyPlaying].pendingStatus = false;
+
+            if(activeGame[0].game.diceNumber < 6) {
+                gameObj.moveToNextPlayer(player.currentlyPlaying, socket);
+                socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
+                socket.emit('mainGameListener', activeGame[0]);
+            }
+            else {
+                socket.broadcast.to(activeGame[0].gameId).emit("mainGameListener", activeGame[0] );
+                socket.emit('mainGameListener', activeGame[0]);
+            }
+
+            UsersGame.update({ playerId: activeGame[0].game.players[player.currentlyPlaying].userId }, { 'figures': activeGame[0].game.players[player.currentlyPlaying].gameState.figures, 'pendingStatus': false  },{ multi: true }, function (err, user) {
+
             });
         });
     };

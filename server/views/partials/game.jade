@@ -34,25 +34,24 @@ div(class="col-xs-12", )
 
     div(class="game-table")
         div(ng-repeat="player in game.players", ng-class="'box' + player.playerColor", ng-attr-id="{{ 'f-box' + ($index + 1) }}", on-finish-render="sortFigures();", ng-if="game.despicableMe.username === user.username")
-            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-click="moveFigure('f1-' + player.playerColor);", ng-attr-findex="{{$index}}", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus")
-            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)")
-            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-click="moveFigure('f2-' + player.playerColor);", ng-attr-findex="{{$index + 1}}", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus")
-            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)")
-            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-click="moveFigure('f3-' + player.playerColor);", ng-attr-findex="{{$index + 2}}", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus")
-            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)")
-            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-click="moveFigure('f4-' + player.playerColor);", ng-attr-findex="{{$index + 3}}", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus")
-            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)")
+            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-click="moveFigure('f1-' + player.playerColor);", findex="0", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus", ng-style="{'top':figure[player.playerColor][0].top, 'left': figure[player.playerColor][0].left }")
+            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)", ng-style="{'top':figure[player.playerColor][0].top, 'left': figure[player.playerColor][0].left }")
+            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-click="moveFigure('f2-' + player.playerColor);", findex="1", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus", ng-style="{'top':figure[player.playerColor][1].top, 'left': figure[player.playerColor][1].left }")
+            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)", ng-style="{'top':figure[player.playerColor][1].top, 'left': figure[player.playerColor][1].left }")
+            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-click="moveFigure('f3-' + player.playerColor);", findex="2", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus", ng-style="{'top':figure[player.playerColor][2].top, 'left': figure[player.playerColor][2].left }")
+            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)", ng-style="{'top':figure[player.playerColor][2].top, 'left': figure[player.playerColor][2].left }")
+            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-click="moveFigure('f4-' + player.playerColor);", findex="3", ng-if="game.despicableMe.playerColor === player.playerColor && player.canRoll && player.pendingStatus", ng-style="{'top':figure[player.playerColor][3].top, 'left': figure[player.playerColor][3].left }")
+            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-if="game.despicableMe.playerColor === player.playerColor && (!player.canRoll || !player.pendingStatus)", ng-style="{'top':figure[player.playerColor][3].top, 'left': figure[player.playerColor][3].left }")
 
-            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor")
-            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor")
-            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor")
-            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor")
+            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor", ng-style="{'top':figure[player.playerColor][0].top, 'left': figure[player.playerColor][0].left }")
+            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor", ng-style="{'top':figure[player.playerColor][1].top, 'left': figure[player.playerColor][1].left }")
+            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor", ng-style="{'top':figure[player.playerColor][2].top, 'left': figure[player.playerColor][2].left }")
+            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-if="game.despicableMe.playerColor !== player.playerColor", ng-style="{'top':figure[player.playerColor][3].top, 'left': figure[player.playerColor][3].left }")
 
         div(ng-repeat="player in game.players", ng-class="'box' + player.playerColor", ng-attr-id="{{ 'f-box' + ($index + 1) }}", on-finish-render="sortFigures();", ng-if="game.despicableMe.username !== user.username")
-            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}")
-            div(ng-class="'figure f2 ' + player.playerColor", ng-attr-id="{{ 'f2-' + player.playerColor }}")
-            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}")
-            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}")
+            div(ng-class="'figure f1 ' + player.playerColor", ng-attr-id="{{ 'f1-' + player.playerColor }}", ng-style="{'top':figure[player.playerColor][0].top, 'left': figure[player.playerColor][0].left }")
+            div(ng-class="'figure f3 ' + player.playerColor", ng-attr-id="{{ 'f3-' + player.playerColor }}", ng-style="{'top':figure[player.playerColor][2].top, 'left': figure[player.playerColor][2].left }")
+            div(ng-class="'figure f4 ' + player.playerColor", ng-attr-id="{{ 'f4-' + player.playerColor }}", ng-style="{'top':figure[player.playerColor][3].top, 'left': figure[player.playerColor][3].left }")
 
 
         div(class="dice", ng-click="game.rollDice();", ng-if="game.despicableMe.username === user.username && game.despicableMe.canRoll && !game.despicableMe.pendingStatus")
@@ -60,47 +59,49 @@ div(class="col-xs-12", )
         div(class="dice", ng-if="game.despicableMe.username !== user.username || !game.despicableMe.canRoll || game.despicableMe.pendingStatus")
             div(class="die", id="dice")
 
+
+
         div(class="figure-map")
-            div.f1
-            div.f2
-            div.f3
-            div.f4
-            div.f5
-            div.f6
-            div.f7
-            div.f8
-            div.f9
-            div.f10
-            div.f11
-            div.f12
-            div.f13
-            div.f14
-            div.f15
-            div.f16
-            div.f17
-            div.f18
-            div.f19
-            div.f20
-            div.f21
-            div.f22
-            div.f23
-            div.f24
-            div.f25
-            div.f26
-            div.f27
-            div.f28
-            div.f29
-            div.f30
-            div.f31
-            div.f32
-            div.f33
-            div.f34
-            div.f35
-            div.f36
-            div.f37
-            div.f38
-            div.f39
-            div.f40
+            div.f1.y1.b31.g21.r11
+            div.f2.y2.b32.g22.r12
+            div.f3.y3.b33.g23.r13
+            div.f4.y4.b34.g24.r14
+            div.f5.y5.b35.g25.r15
+            div.f6.y6.b36.g26.r16
+            div.f7.y7.b37.g27.r17
+            div.f8.y8.b38.g28.r18
+            div.f9.y9.b39.g29.r19
+            div.f10.y10.b40.g30.r20
+            div.f11.y11.b1.g31.r21
+            div.f12.y12.b2.g32.r22
+            div.f13.y13.b3.g33.r23
+            div.f14.y14.b4.g34.r24
+            div.f15.y15.b5.g35.r25
+            div.f16.y16.b6.g36.r26
+            div.f17.y17.b7.g37.r27
+            div.f18.y18.b8.g38.r28
+            div.f19.y19.b9.g39.r29
+            div.f20.y20.b10.g40.r30
+            div.f21.y21.b11.g1.r31
+            div.f22.y22.b12.g2.r32
+            div.f23.y23.b13.g3.r33
+            div.f24.y24.b14.g4.r34
+            div.f25.y25.b15.g5.r35
+            div.f26.y26.b16.g6.r36
+            div.f27.y27.b17.g7.r37
+            div.f28.y28.b18.g8.r38
+            div.f29.y29.b19.g9.r39
+            div.f30.y30.b20.g10.r40
+            div.f31.y31.b21.g11.r1
+            div.f32.y32.b22.g12.r2
+            div.f33.y33.b23.g13.r3
+            div.f34.y34.b24.g14.r4
+            div.f35.y35.b25.g15.r5
+            div.f36.y36.b26.g16.r6
+            div.f37.y37.b27.g17.r7
+            div.f38.y38.b28.g18.r8
+            div.f39.y39.b29.g19.r9
+            div.f40.y40.b30.g20.r10
 
             div.house1#house1
                 div

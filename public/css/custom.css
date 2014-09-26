@@ -285,7 +285,10 @@ h6 {
   -webkit-border-radius: 20px;
   -moz-border-radius: 20px;
   border-radius: 20px;
-  position: absolute; }
+  position: absolute;
+  -webkit-transition: all 0.5s;
+  /* For Safari 3.1 to 6.0 */
+  transition: all 0.5s; }
 
 .figure-map .f1 {
   left: 262px;
@@ -508,7 +511,10 @@ div[class^="house"] div div.hf4 {
   float: left;
   position: absolute;
   z-index: 100;
-  cursor: pointer; }
+  cursor: pointer;
+  -webkit-transition: all 0.5s;
+  /* For Safari 3.1 to 6.0 */
+  transition: all 0.5s; }
 
 .figure:hover {
   opacity: 0.7; }
@@ -540,5 +546,16 @@ div[class^="house"] div div.hf4 {
 .figure.yellow.f4 {
   left: 525px;
   top: 59px; }
+
+.animate-enter, .animate-leave {
+  transition: 500ms ease-in all;
+  position: relative;
+  display: block; }
+
+.animate-enter.animate-enter-active, .animate-leave {
+  left: 0; }
+
+.animate-leave.animate-leave-active, .animate-enter {
+  left: 500px; }
 
 /*# sourceMappingURL=custom.css.map */

@@ -9,6 +9,13 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         myFigures: []
     };
 
+    $scope.figure = {
+        yellow: [],
+        green: [],
+        red: [],
+        blue: []
+    };
+
     $scope.chat = {};
 
     $scope.game.rollDice = function(){
@@ -72,7 +79,7 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
                    }
                 });
 
-                //$scope.sortFigures();
+                $scope.sortFigures();
             }
             else {
                 gameService.getAllPlayers();
@@ -99,33 +106,23 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
     };
 
     $scope.sortFigures = function(){
-        var size = $scope.game.players.length;
-        var colors = ["yellow", "blue", "green", "red"];
-
-        for(var i = 0; i < size; i++){
-
-            var element = $('#house'+ ( i + 1));
-
-            for(var y = 0; y < 4; y++){
-                var figure = $('#f' + (y+1) +'-' + colors[i]);
-
-                $(figure).css({
-                    top: $('#hf'+(y+1), element).position().top + $(element).position().top - 15,
-                    left: $('#hf'+(y+1), element).position().left + $(element).position().left
-                });
+        for(player in $scope.game.players){
+            var current = $scope.game.players[player].username === $scope.user.username ? true : false;
+            for(figure  in $scope.game.players[player].gameState.figures){
+                $scope.game.moveFigureToNewPosition($scope.game.players[player].gameState.figures[figure], figure, $scope.game.players[player].playerColor, current, player);
             }
         }
+        console.log($scope.figure);
     };
 
     $scope.mainGameListener = function(){
         gameService.mainGameListenerRespond().then(
             function(data){
 
-                console.log(data);
-
                 $scope.game.gameObj = data;
 
                 $scope.game.players = data.game.players;
+                $scope.game.hardSetDiceNumber(data.game.diceNumber);
                 $scope.game.playerTurn = data.game.players[0].currentlyPlaying;
 
                 angular.forEach($scope.game.players, function(value, key) {
@@ -133,6 +130,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
                         $scope.game.despicableMe = value;
                     }
                 });
+
+                $scope.game.moveFigures();
 
                 $scope.mainGameListener();
             },
@@ -155,6 +154,68 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
 
         gameService.movePlayer($scope.game.despicableMe);
     };
+
+    $scope.game.moveFigures = function(){
+        for(player in $scope.game.players){
+            var current = $scope.game.players[player].username === $scope.user.username ? true : false;
+            for(figure  in $scope.game.players[player].gameState.figures){
+                $scope.game.moveFigureToNewPosition($scope.game.players[player].gameState.figures[figure], figure, $scope.game.players[player].playerColor, current, player);
+            }
+        }
+    };
+
+    $scope.game.moveFigureToNewPosition = function(position, index, color, current, playerIndex){
+
+        var playerColor = color.substring(0,1);
+
+        if(position !== 0){
+            var element = $('.figure-map');
+            var figArray = {
+                top: $('.' + playerColor + position, element).position().top - 15,
+                left: $('.' + playerColor + position, element).position().left
+            };
+
+            if(color === "yellow"){
+                $scope.figure.yellow[index] = figArray;
+            }
+            else if(color === "blue"){
+                $scope.figure.blue[index] = figArray;
+            }
+            else if(color === "green"){
+                $scope.figure.green[index] = figArray;
+            }
+            else if(color === "red"){
+                $scope.figure.red[index] = figArray;
+            }
+
+        }
+        else {
+            var element = $('#house'+ ( parseInt(playerIndex) + 1));
+
+            var figArray = {
+                top: $('#hf' + (parseInt(index) + 1), element).position().top + $(element).position().top - 15,
+                left: $('#hf' + (parseInt(index) + 1), element).position().left + $(element).position().left
+            };
+
+            if(color === "yellow"){
+                $scope.figure.yellow[index] = figArray;
+            }
+            else if(color === "blue"){
+                $scope.figure.blue[index] = figArray;
+            }
+            else if(color === "green"){
+                $scope.figure.green[index] = figArray;
+            }
+            else if(color === "red"){
+                $scope.figure.red[index] = figArray;
+            }
+        }
+    };
+
+    $scope.game.hardSetDiceNumber = function(number){
+        $scope.game.diceFinalNumber = number;
+        document.getElementById('dice').setAttribute("class", "die die" + number);
+    }
 
     $scope.mainGameListener();
     $scope.game.getDice();
