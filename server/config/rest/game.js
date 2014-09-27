@@ -21,7 +21,8 @@ module.exports = function(app, io, User, config){
         gameOwnerName: {type: String, required: true},
         gameOwner: {type: String, required: true},
         gameCanStart: {type: Boolean, required: true},
-        gameStarted: {type: Boolean, required: true}
+        gameStarted: {type: Boolean, required: true},
+        diceNumber: { type: Number, required: true }
     });
 
     //user schema for every user joined the game
@@ -36,6 +37,8 @@ module.exports = function(app, io, User, config){
         canRoll: {type: Boolean, required: true},
         lastRolledNumber: { type: Number },
         pendingStatus: {type: Boolean, required: true},
+        figuresExit:[Boolean],
+        figuresRealMoves:[Number],
 
             myTurn: {type: Boolean, required: true},
             firstRoll: {type: Boolean, required: true},
@@ -45,6 +48,12 @@ module.exports = function(app, io, User, config){
             figures: [Number]
 
     });
+
+    //game schemea for main game
+   /* var mapObjectList = mongoose.Schema({
+        gameId: {type: String, required: true},
+        mapList: mongoose.Schema.Types.Mixed
+    });*/
 
 
     /*var usersInGameCount = mongoose.Schema({
@@ -57,6 +66,7 @@ module.exports = function(app, io, User, config){
 
     var Game = mongoose.model('games', gameSchema);
     var UsersGame = mongoose.model('usersInGame', usersInGame);
+    //var MapList = mongoose.model('mapObjectList', mapObjectList);
     //var UsersInGame = mongoose.model('usersInGameCount', usersInGameCount);
 
     var currentGame = [];
@@ -72,6 +82,7 @@ module.exports = function(app, io, User, config){
 
     gameObj.getGameObject = function(socket, userId){
         var runOnlyOnce = 0;
+
         Game.count({}, function(err, size){
             if(size){
                 Game.find({}, function(err, gameList){
@@ -90,6 +101,7 @@ module.exports = function(app, io, User, config){
                                         gameId: _gameId,
                                         gameCanStart: gameRow.gameCanStart,
                                         gameStarted: gameRow.gameStarted,
+                                        diceNumber: gameRow.diceNumber,
                                         game: {}
                                     });
 
@@ -114,6 +126,8 @@ module.exports = function(app, io, User, config){
                                             canRoll: players[player].canRoll,
                                             lastRolledNumber: players[player].lastRolledNumber,
                                             pendingStatus: players[player].pendingStatus,
+                                            figuresExit: players[player].figuresExit,
+                                            figuresRealMoves: players[player].figuresRealMoves,
                                             gameState: {
                                                 myTurn: players[player].myTurn,
                                                 firstRoll: players[player].firstRoll,
@@ -123,7 +137,18 @@ module.exports = function(app, io, User, config){
                                                 figures: players[player].figures
                                             }
                                         });
+
+                                        for(figure in players[player].figures){
+                                            if(players[player].figures[figure] !== 0){
+                                                gameFields[players[player].figures[figure]] = {
+                                                    userIndex: player,
+                                                    figureIndex: figure
+                                                }
+                                            }
+                                        }
+
                                     }
+
 
                                     socket.game = games[_gameId];
 
@@ -254,7 +279,8 @@ module.exports = function(app, io, User, config){
                         gameOwnerName: userObj.username,
                         gameOwner: true,
                         gameCanStart: false,
-                        gameStarted: false
+                        gameStarted: false,
+                        diceNumber: 1
                     }, function(err, game){
                         var gameId = userObj.username + userId;
                         var gameCreated = game; // when game is created this object will be returned
@@ -278,12 +304,14 @@ module.exports = function(app, io, User, config){
                                 canRoll: true,
                                 lastRolledNumber: 0,
                                 pendingStatus: false,
+                                figuresExit: [false,false,false,false],
+                                figuresRealMoves:[0,0,0,0],
 
                                     myTurn: true,
                                     firstRoll: true,
                                     firstRollLeft: 3,
                                     startPoint: 1,
-                                    endPoint: 39,
+                                    endPoint: 40,
                                     figures: [0, 0, 0, 0]
 
                             }, function(err, game){
@@ -304,6 +332,7 @@ module.exports = function(app, io, User, config){
                                         gameId: gameNameId,
                                         gameCanStart: gameCreated.gameCanStart,
                                         gameStarted: gameCreated.gameStarted,
+                                        diceNumber: gameCreated.diceNumber,
                                         game: {}
                                     });
 
@@ -319,6 +348,8 @@ module.exports = function(app, io, User, config){
                                         lastRolledNumber: game.lastRolledNumber,
                                         pendingStatus: game.pendingStatus,
                                         canRoll: game.canRoll,
+                                        figuresExit: game.figuresExit,
+                                        figuresRealMoves: game.figuresRealMoves,
                                         gameState: {
                                             myTurn: game.myTurn,
                                             firstRoll: game.firstRoll,
@@ -403,11 +434,13 @@ module.exports = function(app, io, User, config){
                                     canRoll: false,
                                     lastRolledNumber: 0,
                                     pendingStatus: false,
+                                    figuresExit: [false,false,false,false],
+                                    figuresRealMoves: [0,0,0,0],
                                         myTurn: false,
                                         firstRoll: true,
                                         firstRollLeft: 3,
                                         startPoint: (games[game][0].game.players.length * 10) + 1,
-                                        endPoint: (games[game][0].game.players.length * 10) - 1,
+                                        endPoint: (games[game][0].game.players.length * 10),
                                         figures: [0, 0, 0, 0]
                                 }, function(err, userInGame){
                                     if(!err){
@@ -423,6 +456,8 @@ module.exports = function(app, io, User, config){
                                             canRoll: userInGame.canRoll,
                                             lastRolledNumber: userInGame.lastRolledNumber,
                                             pendingStatus: userInGame.pendingStatus,
+                                            figuresExit: usersInGame.figuresExit,
+                                            figuresRealMoves: usersInGame.figuresRealMoves,
                                             gameState: {
                                                 myTurn: userInGame.myTurn,
                                                 firstRoll: userInGame.firstRoll,
@@ -525,7 +560,7 @@ module.exports = function(app, io, User, config){
                             break;
                         }
                         else {
-                            Game.update()
+                            //Game.update()
                             gameCanStart = gameStartStatuses[status];
                         }
                     }
@@ -557,6 +592,11 @@ module.exports = function(app, io, User, config){
             var randomNumber = activeGame[0].game.diceNumber = Math.floor(Math.random()*6) + 1;
             var arrayNumb = arrayNumb.currentPlayer;
 
+            Game.update({ 'gameOwnerId': activeGame[0].usersInGameId }, { 'diceNumber': randomNumber },{ multi: true }, function(err, numb){
+                if(!err){
+                    console.log('New dice number stored in db');
+                }
+            });
 
             //check if is a first round roll
             if(activeGame[0].game.players[arrayNumb].gameState.firstRoll){
@@ -618,15 +658,49 @@ module.exports = function(app, io, User, config){
                     });
                 }
                 else {
-                    gameObj.setPendingStatus(arrayNumb);
+                    var allFigures = activeGame[0].game.players[arrayNumb].figuresRealMoves;
 
-                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {  pendingStatus: true }, function (err, user) {
-                        if(!err){
-                            console.log("pendingStatus property is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+                    var posFlag = false;
 
-                            gameObj.emitNewDiceNumber(socket, randomNumber);
+                    for(figure in allFigures){
+                        /*if(parseInt(allFigures[figure]) === 0 || parseInt(allFigures[figure]) > 40){
+                            continueWithPlay = false;
                         }
-                    });
+                        else {
+                            continueWithPlay = true;
+                            break;
+                        }*/
+
+                        for(fig in allFigures){
+                            var newPos = (parseInt(allFigures[figure]) + randomNumber);
+                            if(newPos < 44){
+                                if(allFigures[fig] !== allFigures[figure]){
+                                    var current = parseInt(allFigures[fig]);
+                                    if(newPos !== current){
+                                        posFlag = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if(posFlag) {
+                        gameObj.setPendingStatus(arrayNumb);
+
+                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {  pendingStatus: true }, function (err, user) {
+                            if(!err){
+                                console.log("pendingStatus property is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                                gameObj.emitNewDiceNumber(socket, randomNumber);
+                            }
+                        });
+                    }
+                    else {
+                        gameObj.moveToNextPlayer(arrayNumb, socket);
+                        gameObj.emitNewDiceNumber(socket, randomNumber);
+                    }
+
                 }
             }
 
@@ -731,9 +805,13 @@ module.exports = function(app, io, User, config){
 
     gameObj.movePlayer = function(socket, userId){
         socket.on('movePlayer', function(player){
-            activeGame[0].game.players[player.currentlyPlaying].gameState.figures = player.gameState.figures;
 
+            gameObj.checkFreeFields(player.gameState.figures, activeGame[0].game.players[player.currentlyPlaying].gameState.figures, player.currentlyPlaying);
+
+            activeGame[0].game.players[player.currentlyPlaying].gameState.figures = player.gameState.figures;
             activeGame[0].game.players[player.currentlyPlaying].pendingStatus = false;
+
+            gameObj.realMovePosition(player.figuresRealMoves, activeGame[0].game.players[player.currentlyPlaying].figuresRealMoves, player.currentlyPlaying, activeGame[0].game.players);
 
             if(activeGame[0].game.diceNumber < 6) {
                 gameObj.moveToNextPlayer(player.currentlyPlaying, socket);
@@ -745,9 +823,91 @@ module.exports = function(app, io, User, config){
                 socket.emit('mainGameListener', activeGame[0]);
             }
 
-            UsersGame.update({ playerId: activeGame[0].game.players[player.currentlyPlaying].userId }, { 'figures': activeGame[0].game.players[player.currentlyPlaying].gameState.figures, 'pendingStatus': false  },{ multi: true }, function (err, user) {
-
+            UsersGame.update({ playerId: activeGame[0].game.players[player.currentlyPlaying].userId }, { 'figures': activeGame[0].game.players[player.currentlyPlaying].gameState.figures, 'pendingStatus': false, 'figuresExit': activeGame[0].game.players[player.currentlyPlaying].figuresExit  },{ multi: true }, function (err, user) {
+                if(err){
+                    console.log('After moving player user can\'t be updated');
+                }
             });
+        });
+    };
+
+    gameObj.checkFreeFields = function(newfigures, oldFigures, currentlyPlaying){
+        for(figure in newfigures){
+            var oldValue = parseInt(oldFigures[figure]);
+            var newValue = parseInt(newfigures[figure]);
+            if(newValue > 0){
+                activeGame[0].game.players[currentlyPlaying].figuresExit[figure] = true;
+            }
+            if(newValue !== oldValue && newValue){
+                var exist = gameFields[newfigures[figure]];
+                if(exist){
+                    var currentFigure = gameFields[newfigures[figure]];
+                    gameObj.removePlayerFigure(currentFigure, newfigures[figure], figure);
+                }
+                else {
+                    if(parseInt(newfigures[figure]) !== 0){
+                        gameFields[oldFigures[figure]] = undefined;
+                        gameFields[newfigures[figure]] = {
+                            userIndex: activeGame[0].game.players[0].currentlyPlaying,
+                            figureIndex: figure
+                        };
+
+                    }
+                }
+            }
+        }
+    };
+
+    gameObj.realMovePosition = function(newfigures, oldFigures, currentlyPlaying, allPlayers){
+        for(figure in newfigures){
+            var oldValue = parseInt(oldFigures[figure]);
+            var newValue = parseInt(newfigures[figure]);
+
+            if(parseInt(allPlayers[figure]) === 0){
+                //activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = 0;
+                for(player in allPlayers){
+                    for(figure in allPlayers[player]){
+                        if(parseInt(allPlayers[player].gameState.figures[figure]) === 0){
+                            allPlayers[player].figuresRealMoves[figure] = 0;
+                        }
+                    }
+                    UsersGame.update({ 'playerId': activeGame[0].game.players[player].userId }, { 'figuresRealMoves': allPlayers[player].figuresRealMoves },{ multi: true }, function (err, user) {
+                        if(err){
+                            console.log('After moving player user can\'t be updated');
+                        }
+                    });
+                }
+            }
+            else{
+                if(newValue !== oldValue){
+                    if(newValue !== 0){
+                       activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = newValue;
+                    }
+                    else {
+                        activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = 0;
+                    }
+
+                    UsersGame.update({ 'playerId': activeGame[0].game.players[currentlyPlaying].userId }, { 'figuresRealMoves': activeGame[0].game.players[currentlyPlaying].figuresRealMoves  },{ multi: true }, function (err, user) {
+                        if(err){
+                            console.log('After moving player user can\'t be updated');
+                        }
+                    });
+                }
+            }
+        }
+    };
+
+    gameObj.removePlayerFigure = function(currentFigure, occupiedField, newFigureIndex){
+        activeGame[0].game.players[currentFigure.userIndex].gameState.figures[currentFigure.figureIndex] = 0;
+        gameFields[occupiedField] = {
+            userIndex: activeGame[0].game.players[0].currentlyPlaying,
+            figureIndex: newFigureIndex
+        };
+        UsersGame.update({ playerId: activeGame[0].game.players[currentFigure.userIndex].userId }, { 'figures': activeGame[0].game.players[currentFigure.userIndex].gameState.figures  }, function (err, user) {
+            if(err){
+                console.log('After moving player user can\'t be updated');
+
+            }
         });
     };
 

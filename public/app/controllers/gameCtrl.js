@@ -93,6 +93,8 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
     gameService.getGameRespond().then(
         function(data){
             $scope.game.gameObj = data[0];
+            console.log(data[0]);
+            $scope.game.diceFinalNumber = data[0].diceNumber;
             gameService.getGameRespond();
         },
         function(status){
@@ -109,10 +111,9 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
         for(player in $scope.game.players){
             var current = $scope.game.players[player].username === $scope.user.username ? true : false;
             for(figure  in $scope.game.players[player].gameState.figures){
-                $scope.game.moveFigureToNewPosition($scope.game.players[player].gameState.figures[figure], figure, $scope.game.players[player].playerColor, current, player);
+                $scope.game.moveFigureToNewPosition($scope.game.players[player].figuresRealMoves[figure], figure, $scope.game.players[player].playerColor, current, player);
             }
         }
-        console.log($scope.figure);
     };
 
     $scope.mainGameListener = function(){
@@ -121,9 +122,12 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
 
                 $scope.game.gameObj = data;
 
+                console.log("Main listener: "+ data);
+
                 $scope.game.players = data.game.players;
-                $scope.game.hardSetDiceNumber(data.game.diceNumber);
-                $scope.game.playerTurn = data.game.players[0].currentlyPlaying;
+                $scope.game.diceFinalNumber = data.game.diceFinalNumber;
+                /*$scope.game.hardSetDiceNumber(data.game.diceNumber);
+                $scope.game.playerTurn = data.game.players[0].currentlyPlaying;*/
 
                 angular.forEach($scope.game.players, function(value, key) {
                     if(value.username === $scope.user.username) {
@@ -143,23 +147,71 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
     $scope.moveFigure = function(figure){
         var self = $('#'+figure);
         var index = parseInt($(self).attr('findex'));
-        var current =  $scope.game.despicableMe.gameState.figures[index];
+        var current =  parseInt($scope.game.despicableMe.gameState.figures[index]);
+        var currentPosition = parseInt($scope.game.despicableMe.figuresRealMoves[index]);
+       /* var newPositionNumber = current + parseInt($scope.game.diceFinalNumber) - parseInt($scope.game.despicableMe.gameState.startPoint);
 
-        if(current === 0){
-            $scope.game.despicableMe.gameState.figures[index] = $scope.game.despicableMe.gameState.startPoint;
+
+
+        var position = $scope.game.despicableMe.gameState.figures[index];
+        var playerIndex = $scope.game.despicableMe.currentlyPlaying;
+        var endPoint = $scope.game.despicableMe.gameState.endPoint;
+
+        var newPosition = (position - (playerIndex * 10)) < 0 ? (40 - ((playerIndex * 10))) + position : (position - (playerIndex * 10)) ;
+
+        if(position > endPoint && newPosition > 40){
+            if(parseInt(playerIndex) === 0){
+                newPosition = position;
+            }
+            else{
+                newPosition = 40 + (position - 9);
+            }
+        }*/
+
+
+
+
+        if((currentPosition + parseInt($scope.game.diceFinalNumber)) <= 44 ){
+
+            for(figure in $scope.game.despicableMe.gameState.figures){
+                var newPos = current === 0 ? $scope.game.despicableMe.gameState.startPoint : current + parseInt($scope.game.diceFinalNumber);
+                if($scope.game.despicableMe.gameState.figures[figure] === newPos){
+                    return false;
+                }
+            }
+
+            if($scope.game.diceFinalNumber === 6){
+                if(currentPosition === 0){
+                    $scope.game.despicableMe.figuresRealMoves[index] = 1;
+                    $scope.game.despicableMe.gameState.figures[index] = $scope.game.despicableMe.gameState.startPoint;
+                }
+                else {
+                    $scope.game.despicableMe.gameState.figures[index] = current + parseInt($scope.game.diceFinalNumber);
+                    $scope.game.despicableMe.figuresRealMoves[index] += parseInt($scope.game.diceFinalNumber);
+                }
+            }
+            else {
+                if(currentPosition !== 0) {
+                    $scope.game.despicableMe.gameState.figures[index] = current + parseInt($scope.game.diceFinalNumber);
+                    $scope.game.despicableMe.figuresRealMoves[index] += parseInt($scope.game.diceFinalNumber);
+                }
+                else {
+                    return false;
+                }
+            }
+            gameService.movePlayer($scope.game.despicableMe);
         }
         else {
-            $scope.game.despicableMe.gameState.figures[index] = current + parseInt($scope.game.diceFinalNumber);
+            return false;
         }
 
-        gameService.movePlayer($scope.game.despicableMe);
     };
 
     $scope.game.moveFigures = function(){
         for(player in $scope.game.players){
             var current = $scope.game.players[player].username === $scope.user.username ? true : false;
             for(figure  in $scope.game.players[player].gameState.figures){
-                $scope.game.moveFigureToNewPosition($scope.game.players[player].gameState.figures[figure], figure, $scope.game.players[player].playerColor, current, player);
+                $scope.game.moveFigureToNewPosition($scope.game.players[player].figuresRealMoves[figure], figure, $scope.game.players[player].playerColor, current, player);
             }
         }
     };
@@ -211,6 +263,70 @@ angryApp.controller('gameCtrl', ['$scope', 'gameService', function($scope, gameS
             }
         }
     };
+
+    /*$scope.game.moveFigureToNewPosition = function(position, index, color, current, playerIndex, endPoint, canExit){
+
+        var playerColor = color.substring(0,1);
+
+
+        var newPosition = (position - (playerIndex * 10)) < 0 ? (40 - ((playerIndex * 10))) + position : (position - (playerIndex * 10)) ;
+
+
+        *//*if(canExit){
+         newPosition = (position - endPoint) + 40;
+         }*//*
+        *//*if(position > endPoint && newPosition > 40){
+            if(parseInt(playerIndex) === 0){
+                newPosition = position;
+            }
+            else{
+                newPosition = 40 + (position - 9);
+            }
+        }*//*
+
+        if(position !== 0){
+            var element = $('.figure-map');
+            var figArray = {
+                top: $('.' + playerColor + newPosition, element).position().top - 15,
+                left: $('.' + playerColor + newPosition, element).position().left
+            };
+
+            if(color === "yellow"){
+                $scope.figure.yellow[index] = figArray;
+            }
+            else if(color === "blue"){
+                $scope.figure.blue[index] = figArray;
+            }
+            else if(color === "green"){
+                $scope.figure.green[index] = figArray;
+            }
+            else if(color === "red"){
+                $scope.figure.red[index] = figArray;
+            }
+
+        }
+        else {
+            var element = $('#house'+ ( parseInt(playerIndex) + 1));
+
+            var figArray = {
+                top: $('#hf' + (parseInt(index) + 1), element).position().top + $(element).position().top - 15,
+                left: $('#hf' + (parseInt(index) + 1), element).position().left + $(element).position().left
+            };
+
+            if(color === "yellow"){
+                $scope.figure.yellow[index] = figArray;
+            }
+            else if(color === "blue"){
+                $scope.figure.blue[index] = figArray;
+            }
+            else if(color === "green"){
+                $scope.figure.green[index] = figArray;
+            }
+            else if(color === "red"){
+                $scope.figure.red[index] = figArray;
+            }
+        }
+    };*/
 
     $scope.game.hardSetDiceNumber = function(number){
         $scope.game.diceFinalNumber = number;

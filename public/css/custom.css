@@ -110,8 +110,8 @@ h6 {
 .game-table .dice {
   position: absolute;
   z-index: 1000;
-  left: 210px;
-  top: 215px; }
+  left: 208px;
+  top: 210px; }
 
 .game-table .die {
   width: 50px;
@@ -454,6 +454,134 @@ h6 {
   left: 222px;
   top: 20px; }
 
+.figure-map .y41,
+.figure-map .y42,
+.figure-map .y43,
+.figure-map .y44 {
+  width: 30px;
+  height: 30px;
+  float: left;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+.figure-map .y41 {
+  left: 222px;
+  top: 60px;
+  background: rgba(238, 220, 15, 0.7); }
+
+.figure-map .y42 {
+  left: 222px;
+  top: 100px;
+  background: rgba(238, 220, 15, 0.7); }
+
+.figure-map .y43 {
+  left: 222px;
+  top: 140px;
+  background: rgba(238, 220, 15, 0.7); }
+
+.figure-map .y44 {
+  left: 222px;
+  top: 180px;
+  background: rgba(238, 220, 15, 0.7); }
+
+.figure-map .b41,
+.figure-map .b42,
+.figure-map .b43,
+.figure-map .b44 {
+  width: 30px;
+  height: 30px;
+  float: left;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+.figure-map .b44 {
+  left: 262px;
+  top: 220px;
+  background: rgba(55, 163, 255, 0.7); }
+
+.figure-map .b43 {
+  left: 302px;
+  top: 220px;
+  background: rgba(55, 163, 255, 0.7); }
+
+.figure-map .b42 {
+  left: 342px;
+  top: 220px;
+  background: rgba(55, 163, 255, 0.7); }
+
+.figure-map .b41 {
+  left: 382px;
+  top: 220px;
+  background: rgba(55, 163, 255, 0.7); }
+
+.figure-map .r41,
+.figure-map .r42,
+.figure-map .r43,
+.figure-map .r44 {
+  width: 30px;
+  height: 30px;
+  float: left;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+.figure-map .r41 {
+  left: 62px;
+  top: 220px;
+  background: rgba(218, 25, 48, 0.7); }
+
+.figure-map .r42 {
+  left: 102px;
+  top: 220px;
+  background: rgba(218, 25, 48, 0.7); }
+
+.figure-map .r43 {
+  left: 142px;
+  top: 220px;
+  background: rgba(218, 25, 48, 0.7); }
+
+.figure-map .r44 {
+  left: 182px;
+  top: 220px;
+  background: rgba(218, 25, 48, 0.7); }
+
+.figure-map .g41,
+.figure-map .g42,
+.figure-map .g43,
+.figure-map .g44 {
+  width: 30px;
+  height: 30px;
+  float: left;
+  -webkit-border-radius: 20px;
+  -moz-border-radius: 20px;
+  border-radius: 20px;
+  position: absolute; }
+
+.figure-map .g44 {
+  left: 222px;
+  top: 260px;
+  background: rgba(13, 152, 22, 0.7); }
+
+.figure-map .g43 {
+  left: 222px;
+  top: 300px;
+  background: rgba(13, 152, 22, 0.7); }
+
+.figure-map .g42 {
+  left: 222px;
+  top: 340px;
+  background: rgba(13, 152, 22, 0.7); }
+
+.figure-map .g41 {
+  left: 222px;
+  top: 380px;
+  background: rgba(13, 152, 22, 0.7); }
+
 div[class^="house"] {
   width: 71px;
   height: 71px;
@@ -494,11 +622,11 @@ div[class^="house"] div div.hf4 {
   right: -17px; }
 
 .house2 {
-  top: 364px;
+  top: 379px;
   right: -17px; }
 
 .house3 {
-  top: 364px;
+  top: 379px;
   left: 20px; }
 
 .house4 {
@@ -547,15 +675,30 @@ div[class^="house"] div div.hf4 {
   left: 525px;
   top: 59px; }
 
-.animate-enter, .animate-leave {
-  transition: 500ms ease-in all;
-  position: relative;
-  display: block; }
+/* Put your css in here */
+.move {
+  transition: all 2s; }
 
-.animate-enter.animate-enter-active, .animate-leave {
-  left: 0; }
+.move.ng-enter,
+.move.ng-leave.ng-leave-active {
+  opacity: 0; }
 
-.animate-leave.animate-leave-active, .animate-enter {
-  left: 500px; }
+.move.ng-leave,
+.move.ng-enter.ng-enter-active {
+  opacity: 1; }
+
+button.slide {
+  transform: translate(0, 150px); }
+
+button.slide-add, .slide-remove {
+  transition: 0.5s; }
+
+button.slide-add,
+button.slide-remove.slide-remove-active {
+  transform: translate(0, 0); }
+
+button.slide-remove,
+button.slide-add.slide-add-active {
+  transform: translate(0, 150px); }
 
 /*# sourceMappingURL=custom.css.map */
