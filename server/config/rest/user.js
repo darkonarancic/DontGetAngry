@@ -61,7 +61,7 @@ module.exports = exports = function(app, io, User){
                         doc.password = "";
                         resDoc.prototype = doc;
 
-                        var url = "http://localhost:3000/verify/";
+                        var url = "http://sheltered-bastion-5205.herokuapp.com/verify/";
 
                         //config for user email verification
                         var userConfig = {
