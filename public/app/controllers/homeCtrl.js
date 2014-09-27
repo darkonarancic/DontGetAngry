@@ -35,10 +35,14 @@ angryApp.controller('homeCtrl', ['$scope', 'gameService', '$location', function(
                 var style = window.getComputedStyle(modal);
 
                 if(data){
-
-                    if(style.display === 'none'){
-                        $(modal).modal('show');
+                    for(var player in data.game.players){
+                        if(data.game.players[player].username === $scope.user.username){
+                            if(style.display === 'none'){
+                                $(modal).modal('show');
+                            }
+                        }
                     }
+
 
                     $scope.currentGameObj = data;
                 }
