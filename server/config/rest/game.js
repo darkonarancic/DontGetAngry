@@ -645,64 +645,96 @@ module.exports = function(app, io, User, config){
                 }
             }
             else {
-                if(randomNumber === 6){
-                    gameObj.setPendingStatus(arrayNumb);
-                    activeGame[0].game.players[arrayNumb].lastRolledNumber = randomNumber;
 
-                    UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, { lastRolledNumber: randomNumber, pendingStatus: true },{ multi: true }, function (err, user) {
-                        if(!err){
-                            console.log("firstRollLeft and pendingStatus properties is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
 
-                            gameObj.emitNewDiceNumber(socket, randomNumber);
-                        }
-                    });
-                }
-                else {
-                    var allFigures = activeGame[0].game.players[arrayNumb].figuresRealMoves;
+                    //var allFigures = activeGame[0].game.players[arrayNumb].figuresRealMoves;
 
                     var posFlag = false;
+                    var i = 0;
 
-                    for(figure in allFigures){
-                        /*if(parseInt(allFigures[figure]) === 0 || parseInt(allFigures[figure]) > 40){
-                            continueWithPlay = false;
-                        }
-                        else {
-                            continueWithPlay = true;
-                            break;
-                        }*/
-
-                        for(fig in allFigures){
-                            var newPos = (parseInt(allFigures[figure]) + randomNumber);
-                            if(newPos < 44){
-                                if(allFigures[fig] !== allFigures[figure]){
-                                    var current = parseInt(allFigures[fig]);
-                                    if(newPos !== current){
-                                        posFlag = true;
+                    for(figure in activeGame[0].game.players[arrayNumb].figuresRealMoves){
+                        if(!posFlag){
+                            if(i <= 3) {
+                                /*if(parseInt(allFigures[figure]) === 0 || parseInt(allFigures[figure]) > 40){
+                                 continueWithPlay = false;
+                                 }
+                                 else {
+                                 continueWithPlay = true;
+                                 break;
+                                 }*/
+                                var y = 0;
+                                for (fig in activeGame[0].game.players[arrayNumb].figuresRealMoves) {
+                                    if (y <= 3) {
+                                        var newPos = (parseInt(activeGame[0].game.players[arrayNumb].figuresRealMoves[figure]) + randomNumber);
+                                        if (newPos < 44) {
+                                            if (fig !== figure) {
+                                                var current = parseInt(activeGame[0].game.players[arrayNumb].figuresRealMoves[figure]);
+                                                if (newPos !== current) {
+                                                    if (current === 0 && randomNumber === 6) {
+                                                        posFlag = true;
+                                                        break;
+                                                    }
+                                                    else if (current > 0 && current <= 40) {
+                                                        posFlag = true;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        y++;
+                                    }
+                                    else {
                                         break;
                                     }
                                 }
+                                i++;
                             }
+                            else {
+                                break;
+                            }
+                        }
+                        else {
+                            break;
                         }
                     }
 
                     if(posFlag) {
-                        gameObj.setPendingStatus(arrayNumb);
+                        if(randomNumber === 6){
+                            gameObj.setPendingStatus(arrayNumb);
+                            activeGame[0].game.players[arrayNumb].lastRolledNumber = randomNumber;
 
-                        UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {  pendingStatus: true }, function (err, user) {
-                            if(!err){
-                                console.log("pendingStatus property is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+                            UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, { lastRolledNumber: randomNumber, pendingStatus: true },{ multi: true }, function (err, user) {
+                                if(!err){
+                                    console.log("firstRollLeft and pendingStatus properties is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
 
-                                gameObj.emitNewDiceNumber(socket, randomNumber);
-                            }
-                        });
+                                    gameObj.emitNewDiceNumber(socket, randomNumber);
+                                }
+                            });
+                        }
+                        else{
+                            gameObj.setPendingStatus(arrayNumb);
+
+                            UsersGame.update({ playerId: activeGame[0].game.players[arrayNumb].userId }, {  pendingStatus: true }, function (err, user) {
+                                if(!err){
+                                    console.log("pendingStatus property is set to true for the user: " + activeGame[0].game.players[arrayNumb].username);
+
+                                    gameObj.emitNewDiceNumber(socket, randomNumber);
+                                }
+                            });
+                        }
                     }
                     else {
-                        gameObj.moveToNextPlayer(arrayNumb, socket);
-                        gameObj.emitNewDiceNumber(socket, randomNumber);
+                        if(randomNumber === 6){
+                            gameObj.emitNewDiceNumber(socket, randomNumber);
+                        }
+                        else{
+                            gameObj.moveToNextPlayer(arrayNumb, socket);
+                            gameObj.emitNewDiceNumber(socket, randomNumber);
+                        }
                     }
 
                 }
-            }
+
 
 
         });
@@ -838,21 +870,26 @@ module.exports = function(app, io, User, config){
             if(newValue > 0){
                 activeGame[0].game.players[currentlyPlaying].figuresExit[figure] = true;
             }
-            if(newValue !== oldValue && newValue){
-                var exist = gameFields[newfigures[figure]];
-                if(exist){
-                    var currentFigure = gameFields[newfigures[figure]];
-                    gameObj.removePlayerFigure(currentFigure, newfigures[figure], figure);
+            if(newValue !== oldValue){
+                if(newValue <= 40){
+                    var exist = gameFields[newfigures[figure]];
+                    if(exist){
+                        var currentFigure = gameFields[newfigures[figure]];
+                        gameObj.removePlayerFigure(currentFigure, newfigures[figure], figure);
+                    }
+                    else {
+                        if(parseInt(newfigures[figure]) !== 0){
+                            gameFields[oldFigures[figure]] = undefined;
+                            gameFields[newfigures[figure]] = {
+                                userIndex: activeGame[0].game.players[0].currentlyPlaying,
+                                figureIndex: figure
+                            };
+
+                        }
+                    }
                 }
                 else {
-                    if(parseInt(newfigures[figure]) !== 0){
-                        gameFields[oldFigures[figure]] = undefined;
-                        gameFields[newfigures[figure]] = {
-                            userIndex: activeGame[0].game.players[0].currentlyPlaying,
-                            figureIndex: figure
-                        };
-
-                    }
+                    gameFields[oldFigures[figure]] = undefined;
                 }
             }
         }
@@ -863,37 +900,37 @@ module.exports = function(app, io, User, config){
             var oldValue = parseInt(oldFigures[figure]);
             var newValue = parseInt(newfigures[figure]);
 
-            if(parseInt(allPlayers[figure]) === 0){
+            for(player in allPlayers) {
                 //activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = 0;
-                for(player in allPlayers){
-                    for(figure in allPlayers[player]){
-                        if(parseInt(allPlayers[player].gameState.figures[figure]) === 0){
-                            allPlayers[player].figuresRealMoves[figure] = 0;
-                        }
-                    }
-                    UsersGame.update({ 'playerId': activeGame[0].game.players[player].userId }, { 'figuresRealMoves': allPlayers[player].figuresRealMoves },{ multi: true }, function (err, user) {
-                        if(err){
-                            console.log('After moving player user can\'t be updated');
-                        }
-                    });
-                }
-            }
-            else{
-                if(newValue !== oldValue){
-                    if(newValue !== 0){
-                       activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = newValue;
-                    }
-                    else {
-                        activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = 0;
+                for (figInAll in allPlayers[player]) {
+
+                    if (parseInt(allPlayers[player].gameState.figures[figure]) === 0) {
+                        allPlayers[player].figuresRealMoves[figure] = 0;
                     }
 
-                    UsersGame.update({ 'playerId': activeGame[0].game.players[currentlyPlaying].userId }, { 'figuresRealMoves': activeGame[0].game.players[currentlyPlaying].figuresRealMoves  },{ multi: true }, function (err, user) {
-                        if(err){
+                    UsersGame.update({ 'playerId': activeGame[0].game.players[player].userId }, { 'figuresRealMoves': allPlayers[player].figuresRealMoves }, { multi: true }, function (err, user) {
+                        if (err) {
                             console.log('After moving player user can\'t be updated');
                         }
                     });
                 }
             }
+
+            if(newValue !== oldValue){
+                if(newValue !== 0){
+                   activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = newValue;
+                }
+                else {
+                    activeGame[0].game.players[currentlyPlaying].figuresRealMoves[figure] = 0;
+                }
+
+                UsersGame.update({ 'playerId': activeGame[0].game.players[currentlyPlaying].userId }, { 'figuresRealMoves': activeGame[0].game.players[currentlyPlaying].figuresRealMoves  },{ multi: true }, function (err, user) {
+                    if(err){
+                        console.log('After moving player user can\'t be updated');
+                    }
+                });
+            }
+
         }
     };
 
