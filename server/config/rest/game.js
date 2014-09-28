@@ -259,18 +259,8 @@ module.exports = function(app, io, User, config){
             });
             Game.count({ gameOwnerId: userId }, function(err, count){
                 if(err) {
-                    res.status(404);
-                    res.json({
-                        status: false,
-                        msg: 'An error has occurred during the game creation!'
-                    })
                 }
                 else if(count) {
-                    res.status(404);
-                    res.json({
-                        status: false,
-                        msg: 'You have one game assigned to you!'
-                    })
                 }
                 else {
                     Game.create({
